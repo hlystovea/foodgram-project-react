@@ -1,14 +1,17 @@
+from django import forms
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from . import models
+from . import fields, models
 
 
 User = get_user_model()
 
+
 admin.site.unregister(User)
+
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -62,7 +65,28 @@ class CustomUserAdmin(UserAdmin):
 
 
 @admin.register(models.Ingredient)
-class ArticleAdmin(admin.ModelAdmin):
+class IngredientAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'measurement_unit')
     search_fields = ('name', )
     list_filter = ('measurement_unit', )
+
+
+@admin.register(models.Recipe)
+class RecipeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'author', 'cooking_time')
+    search_fields = ('name', 'author', 'tags')
+    list_filter = ('tags', )
+
+
+@admin.register(models.QuantityIngredient)
+class QuantityAdmin(admin.ModelAdmin):
+    list_display = ('id', 'quantity')
+    search_fields = ('recipe', 'ingredient')
+
+
+@admin.register(models.Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'slug', 'color')
+    search_fields = ('name', 'slug')
+    list_filter = ('color', )
+    prepopulated_fields = {'slug': ('name',)}
