@@ -10,6 +10,7 @@ djangorestframework = "*"
 pillow = "*"
 gunicorn = "*"
 psycopg2-binary = "*"
+pytest = "*"
 
 [dev-packages]
 
