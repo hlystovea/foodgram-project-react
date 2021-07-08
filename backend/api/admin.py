@@ -1,13 +1,16 @@
-from django import forms
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from . import fields, models
+from . import models
 
 
 User = get_user_model()
+
+
+class MixinAdmin(admin.ModelAdmin):
+    empty_value_display = _('-пусто-')
 
 
 admin.site.unregister(User)
@@ -65,27 +68,22 @@ class CustomUserAdmin(UserAdmin):
 
 
 @admin.register(models.Ingredient)
-class IngredientAdmin(admin.ModelAdmin):
+class IngredientAdmin(MixinAdmin):
     list_display = ('id', 'name', 'measurement_unit')
     search_fields = ('name', )
     list_filter = ('measurement_unit', )
 
 
 @admin.register(models.Recipe)
-class RecipeAdmin(admin.ModelAdmin):
+class RecipeAdmin(MixinAdmin):
     list_display = ('id', 'name', 'author', 'cooking_time')
     search_fields = ('name', 'author', 'tags')
     list_filter = ('tags', )
-
-
-@admin.register(models.QuantityIngredient)
-class QuantityAdmin(admin.ModelAdmin):
-    list_display = ('id', 'quantity')
-    search_fields = ('recipe', 'ingredient')
+    autocomplete_fields = ('tags', )
 
 
 @admin.register(models.Tag)
-class TagAdmin(admin.ModelAdmin):
+class TagAdmin(MixinAdmin):
     list_display = ('id', 'name', 'slug', 'color')
     search_fields = ('name', 'slug')
     list_filter = ('color', )

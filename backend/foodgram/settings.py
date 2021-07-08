@@ -1,20 +1,12 @@
 from pathlib import Path
+from os import environ
 
-import environ
-from django.core.management.utils import get_random_secret_key
-
-env = environ.Env(
-    DEBUG=(bool, False),
-    SECRET_KEY=(str, get_random_secret_key()),
-)
-
-environ.Env.read_env()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = environ['SECRET_KEY']
 
-DEBUG = env('DEBUG')
+DEBUG = int(environ.get('DEBUG', False))
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*', 'web:8000']
 
@@ -61,7 +53,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
-    'default': env.db(),
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': environ.get('POSTGRES_DB', 'postgres'),
+        'USER': environ.get('POSTGRES_USER', 'postgres'),
+        'PASSWORD': environ.get('POSTGRES_PASSWORD', 'postgres'),
+        'HOST': environ.get('DB_HOST', 'db'),
+        'PORT': environ.get('DB_PORT', '5432'),
+    }
 }
 
 AUTH_PASSWORD_VALIDATORS = [

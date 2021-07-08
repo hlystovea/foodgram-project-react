@@ -31,8 +31,6 @@ class Ingredient(models.Model):
 class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         to=Ingredient,
-        through='QuantityIngredient',
-        through_fields=('recipe', 'ingredient'),
         verbose_name=_('Ингредиенты'),
         related_name='recipes',
     )
@@ -60,6 +58,7 @@ class Recipe(models.Model):
         verbose_name=_('Рецепт'),
     )
     cooking_time = models.PositiveSmallIntegerField(
+        verbose_name=_('Время приготовления, мин'),
         validators=[
             validators.MinValueValidator(
                 1,
@@ -82,7 +81,7 @@ class Recipe(models.Model):
         return self.name
 
 
-class QuantityIngredient(models.Model):
+class Quantity(models.Model):
     recipe = models.ForeignKey(
         to=Recipe,
         on_delete=models.CASCADE,
