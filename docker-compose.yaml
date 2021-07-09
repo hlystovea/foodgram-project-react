@@ -7,7 +7,7 @@ services:
     env_file:
       - ./.env
   backend:
-    image: hlystovea/foodgram:latest
+    build: .
     restart: always
     volumes:
       - static_value:/code/static/
