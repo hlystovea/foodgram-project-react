@@ -6,7 +6,7 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env
-  backend:
+  web:
     image: hlystovea/foodgram:latest
     restart: always
     volumes:
