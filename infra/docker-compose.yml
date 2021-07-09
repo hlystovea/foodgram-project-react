@@ -7,9 +7,7 @@ services:
     env_file:
       - ./.env
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: hlystovea/foodgram:latest
     restart: always
     volumes:
       - static_value:/code/static/
