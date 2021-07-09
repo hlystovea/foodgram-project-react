@@ -6,8 +6,10 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env
-  web:
-    image: hlystovea/foodgram:latest
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile 
     restart: always
     volumes:
       - static_value:/code/static/
@@ -18,10 +20,10 @@ services:
       - ./.env
   frontend:
     build:
-      context: /frontend
+      context: ./frontend
       dockerfile: Dockerfile 
     volumes:
-      - /frontend/:/app/result_build/
+      - ./frontend/:/app/result_build/
     depends_on:
       - backend
   nginx:
@@ -29,10 +31,10 @@ services:
     ports:
       - 80:80
     volumes:
-      - /infra/nginx.conf:/etc/nginx/conf.d/default.conf
-      - /frontend/build:/usr/share/nginx/html/
-      - /docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
-      - /docs/openapi-schema.yml:/usr/share/nginx/html/api/docs/openapi-schema.yml
+      - ./infra/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./frontend/build:/usr/share/nginx/html/
+      - ./docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
+      - ./docs/openapi-schema.yml:/usr/share/nginx/html/api/docs/openapi-schema.yml
       - static_value:/var/html/static/
       - media_value:/var/html/media/
     depends_on:

@@ -43,7 +43,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: hlystovea/foodgram:latest
+          tags: hlystovea/foodgram:$GITHUB_REF
 
   deploy:
       runs-on: ubuntu-latest
