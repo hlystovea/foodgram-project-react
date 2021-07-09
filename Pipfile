@@ -11,6 +11,7 @@ pillow = "*"
 gunicorn = "*"
 psycopg2-binary = "*"
 pytest = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
