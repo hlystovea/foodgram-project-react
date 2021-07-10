@@ -52,7 +52,10 @@ class Quantity(models.Model):
         verbose_name_plural = _('Кол-ва ингредиентов')
 
     def __str__(self):
-        return f'{self.ingredient.name}: {self.quantity} {self.ingredient.measurement_unit}'
+        name = self.ingredient.name
+        quantity = self.quantity
+        measurement_unit = self.ingredient.measurement_unit
+        return f'{name}: {quantity} {measurement_unit}'
 
 
 class Tag(models.Model):
