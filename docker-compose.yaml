@@ -14,7 +14,9 @@ services:
       - static_value:/code/static/
       - media_value:/code/media/
     command:
-      - bash -c 'python manage.py migrate'
+      - /bin/sh
+      - '-c'
+      - '/code/entrypoint.sh'
     depends_on:
       - db
     env_file:
