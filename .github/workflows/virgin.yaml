@@ -37,7 +37,7 @@ jobs:
             passphrase: ${{ secrets.PASSPHRASE }}
             stack_file_name: docker-compose.yaml
             script: |
-              sudo docker pull hlystovea/yamdb_final
+              sudo docker pull hlystovea/foodgram:latest
               sudo docker-compose stop
               sudo docker-compose rm web
               touch .env 
