@@ -22,7 +22,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
+          tags: hlystovea/foodgram_back:latest
 
   deploy:
       runs-on: ubuntu-latest
@@ -38,7 +38,7 @@ jobs:
             stack_file_name: docker-compose.yaml
             script_stop: true
             script: |
-              sudo docker pull hlystovea/foodgram:latest
+              sudo docker pull hlystovea/foodgram_back:latest
               sudo docker-compose stop
               sudo docker-compose rm web
               touch .env 
