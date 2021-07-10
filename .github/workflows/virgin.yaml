@@ -36,6 +36,7 @@ jobs:
             key: ${{ secrets.SSH_KEY }}
             passphrase: ${{ secrets.PASSPHRASE }}
             stack_file_name: docker-compose.yaml
+            script_stop: true
             script: |
               sudo docker pull hlystovea/foodgram:latest
               sudo docker-compose stop
