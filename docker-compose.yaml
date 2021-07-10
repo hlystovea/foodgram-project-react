@@ -13,10 +13,6 @@ services:
     volumes:
       - static_value:/code/static/
       - media_value:/code/media/
-    command:
-      - /bin/sh
-      - '-c'
-      - '/code/entrypoint.sh'
     depends_on:
       - db
     env_file:
