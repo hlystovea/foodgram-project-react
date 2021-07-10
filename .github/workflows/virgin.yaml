@@ -40,6 +40,7 @@ jobs:
               sudo docker pull hlystovea/foodgram_back:latest
               sudo docker-compose stop
               sudo docker-compose rm web
+              touch tut.txt
               touch .env 
               echo SECRET_KEY=${{ secrets.SECRET_KEY }} > .env
               echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env
@@ -59,4 +60,4 @@ jobs:
       with:
         to: ${{ secrets.TELEGRAM_TO }}
         token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: ${{ github.workflow }} успешно выполнен!
+        message: ${{ github.workflow }} успешно выполнен !
