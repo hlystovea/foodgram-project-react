@@ -95,3 +95,10 @@ class TagAdmin(MixinAdmin):
     search_fields = ('name', 'slug')
     list_filter = ('color', )
     prepopulated_fields = {'slug': ('name',)}
+
+
+@admin.register(models.Subscription)
+class SubscriptionAdmin(MixinAdmin):
+    list_display = ('id', 'user', 'author')
+    search_fields = ('user', 'author')
+    autocomplete_fields = ('user', 'author')
