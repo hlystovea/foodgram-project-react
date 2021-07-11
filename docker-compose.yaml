@@ -7,9 +7,12 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env
-  web:
+  backend:
     image: hlystovea/foodgram_back:latest
     restart: always
+    command: gunicorn project.wsgi --bind 0.0.0.0:8000
+    ports:
+      - '8000:8000'
     volumes:
       - static_value:/code/static/
       - media_value:/code/media/
@@ -17,18 +20,25 @@ services:
       - db
     env_file:
       - ./.env
+  frontend:
+    image: hlystovea/foodgram_front:latest
+    volumes:
+      - react_build:/react/build
   nginx:
     image: hlystovea/foodgram_front:latest
     ports:
       - '80:80'
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - react_build:/usr/share/nginx/html
       - static_value:/var/html/static/
       - media_value:/var/html/media/
     depends_on:
-      - web
+      - backend
+      - frontend
 
 volumes:
   postgres_data:
+  react_build:
   static_value:
   media_value:
