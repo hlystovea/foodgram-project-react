@@ -25,7 +25,7 @@ services:
     volumes:
       - react_build:/react/build
   nginx:
-    image: hlystovea/foodgram_front:latest
+    image: nginx:latest
     ports:
       - '80:80'
     volumes:
