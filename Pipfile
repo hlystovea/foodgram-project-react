@@ -10,8 +10,8 @@ markdown = "*"
 django-filter = "*"
 gunicorn = "*"
 pillow = "*"
-psycopg2 = "*"
 djoser = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 
