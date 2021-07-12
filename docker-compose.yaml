@@ -33,6 +33,8 @@ services:
       - react_build:/usr/share/nginx/html
       - static_value:/var/html/static/
       - media_value:/var/html/media/
+      - ../docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
+      - ../docs/openapi-schema.yml:/usr/share/nginx/html/api/docs/openapi-schema.yml
     depends_on:
       - backend
       - frontend
