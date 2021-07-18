@@ -56,7 +56,8 @@ jobs:
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_back:latest
             sudo docker-compose stop
             sudo docker-compose rm backend
-            touch .env 
+            sudo docker system prune -f
+            touch .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} > .env
             echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env
             echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env

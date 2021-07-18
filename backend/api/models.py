@@ -33,13 +33,17 @@ class Quantity(models.Model):
         to=Ingredient,
         verbose_name=_('Ингредиент'),
         on_delete=models.CASCADE,
-        related_name='quantities'
+    )
+    recipe = models.ForeignKey(
+        to='Recipe',
+        verbose_name=_('Рецепт'),
+        on_delete=models.CASCADE,
     )
     quantity = models.PositiveSmallIntegerField(
         verbose_name=_('Количество'),
         validators=[
             validators.MaxValueValidator(
-                10000,
+                99999,
                 message='Слишком много, проверьте единицы измерения',
             ),
         ]
@@ -48,8 +52,8 @@ class Quantity(models.Model):
     class Meta:
         app_label = 'api'
         ordering = ('ingredient', )
-        verbose_name = _('Кол-во ингредиента')
-        verbose_name_plural = _('Кол-ва ингредиентов')
+        verbose_name = _('Количество ингредиента')
+        verbose_name_plural = _('Количества ингредиентов')
 
     def __str__(self):
         name = self.ingredient.name
@@ -100,11 +104,6 @@ class Recipe(models.Model):
         max_length=200,
         unique=True,
     )
-    ingredients = models.ManyToManyField(
-        to=Quantity,
-        verbose_name=_('Ингредиенты'),
-        related_name='recipes',
-    )
     text = models.TextField(
         verbose_name=_('Рецепт'),
     )
@@ -142,13 +141,13 @@ class Subscription(models.Model):
         to=User,
         verbose_name=_('Подписчик'),
         on_delete=models.CASCADE,
-        related_name='subscriptions'
+        related_name='subscriptions',
     )
     author = models.ForeignKey(
         to=User,
         verbose_name=_('Автор'),
         on_delete=models.CASCADE,
-        related_name='subscribers'
+        related_name='subscribers',
     )
 
     class Meta:
@@ -164,3 +163,53 @@ class Subscription(models.Model):
 
     def __str__(self):
         return f'Подписка: {self.user.username} на {self.author.username}'
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        to=User,
+        verbose_name=_('Пользователь'),
+        on_delete=models.CASCADE,
+        related_name='favorites',
+    )
+    favorite = models.ForeignKey(
+        to=Recipe,
+        verbose_name=_('Рецепт'),
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        app_label = 'api'
+        ordering = ('id', )
+        verbose_name = _('Избранный рецепт')
+        verbose_name_plural = _('Избранные рецепты')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'favorite'],
+                name='user_and_favorite_uniq_together'),
+            ]
+
+
+class Purchase(models.Model):
+    user = models.ForeignKey(
+        to=User,
+        verbose_name=_('Пользователь'),
+        on_delete=models.CASCADE,
+        related_name='shopping_сart'
+    )
+    purchase = models.ForeignKey(
+        to=Recipe,
+        verbose_name=_('Рецепт'),
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        app_label = 'api'
+        ordering = ('id', )
+        verbose_name = _('Покупка')
+        verbose_name_plural = _('Покупки')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'purchase'],
+                name='user_and_purchase_uniq_together'),
+            ]

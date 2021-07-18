@@ -73,11 +73,9 @@ class IngredientAdmin(MixinAdmin):
     list_filter = ('measurement_unit', )
 
 
-@admin.register(models.Quantity)
-class QuantityAdmin(MixinAdmin):
-    list_display = ('id', 'ingredient', 'quantity')
-    search_fields = ('ingredient', )
-    autocomplete_fields = ('ingredient', )
+#@admin.register(models.Quantity)
+class QuantityInline(admin.TabularInline):
+    model = models.Quantity
 
 
 @admin.register(models.Recipe)
@@ -85,8 +83,9 @@ class RecipeAdmin(MixinAdmin):
     list_display = ('id', 'name', 'author', 'cooking_time')
     search_fields = ('name', 'author', 'tags')
     list_filter = ('tags', )
-    autocomplete_fields = ('tags', )
-    filter_horizontal = ('ingredients', )
+    inlines = [
+        QuantityInline,
+    ]
 
 
 @admin.register(models.Tag)
