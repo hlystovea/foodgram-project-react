@@ -1,6 +1,18 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from . import models
+
+User = get_user_model()
+
+
+class AuthorSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.BooleanField(default=False)
+
+    class Meta:
+        fields = ('id', 'username', 'email',
+                  'first_name', 'last_name', 'is_subscribed')
+        model = models.User
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -10,8 +22,25 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class QuantitySerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='ingredient.id', read_only=True)
+    name = serializers.CharField(source='ingredient.name', read_only=True)
+    measurement_unit = serializers.CharField(
+        source='ingredient.measurement_unit',
+        read_only=True,
+    )
+
     class Meta:
-        fields = '__all__'
+        fields = ['id', 'name', 'measurement_unit', 'amount']
+        model = models.Quantity
+
+
+class QuantityWriteSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=models.Ingredient.objects.all()
+    )
+
+    class Meta:
+        fields = ['id', 'amount']
         model = models.Quantity
 
 
@@ -22,6 +51,61 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
+    ingredients = QuantitySerializer(many=True, read_only=True)
+    is_favorited = serializers.BooleanField(default=False)
+    is_in_shopping_cart = serializers.BooleanField(default=False)
+
     class Meta:
         fields = '__all__'
         model = models.Recipe
+
+
+class RecipeWriteSerializer(serializers.ModelSerializer):
+    author = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+    ingredients = QuantityWriteSerializer(many=True)
+
+    class Meta:
+        exclude = ['image']
+        model = models.Recipe
+
+    def create(self, validated_data):
+        ingredients_data = validated_data.pop('ingredients')
+        tags_data = validated_data.pop('tags')
+        recipe = models.Recipe.objects.create(**validated_data)
+        for ingredient in ingredients_data:
+            ingredient, created = models.Quantity.objects.get_or_create(
+                recipe=recipe,
+                ingredient=ingredient['id'],
+                amount=ingredient['amount'],
+            )
+        for tag in tags_data:
+            recipe.tags.add(tag)
+        return recipe
+
+    def update(self, instance, validated_data):
+        ingredients_data = validated_data.pop('ingredients')
+        tags_data = validated_data.pop('tags')
+
+        instance.name = validated_data.get('name', instance.name)
+        instance.text = validated_data.get('text', instance.text)
+        instance.image = validated_data.get('image', instance.image)
+        instance.cooking_time = validated_data.get(
+            'cooking_time',
+            instance.cooking_time,
+        )
+        instance.tags.set(tags_data)
+
+        models.Quantity.objects.filter(recipe=instance).delete()
+
+        for ingredient in ingredients_data:
+            ingredient, created = models.Quantity.objects.get_or_create(
+                recipe=instance,
+                ingredient=ingredient['id'],
+                amount=ingredient['amount'],
+            )
+
+        return instance

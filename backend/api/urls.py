@@ -13,14 +13,7 @@ v1_router.register(r'recipes', views.RecipeViewSet, basename='recipes')
 
 
 urlpatterns = [
-    path(
-        'auth/token/',
-        TokenObtainPairView.as_view(), name='token_obtain_pair'
-    ),
-    path(
-        'auth/token/refresh/',
-        TokenRefreshView.as_view(), name='token_refresh'
-    ),
+    path('auth/', include('djoser.urls.authtoken')),
     path('', include('djoser.urls')),
     path('', include(v1_router.urls)),
 ]

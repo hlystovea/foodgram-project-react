@@ -38,8 +38,9 @@ class Quantity(models.Model):
         to='Recipe',
         verbose_name=_('Рецепт'),
         on_delete=models.CASCADE,
+        related_name='ingredients',
     )
-    quantity = models.PositiveSmallIntegerField(
+    amount = models.PositiveSmallIntegerField(
         verbose_name=_('Количество'),
         validators=[
             validators.MaxValueValidator(
@@ -57,9 +58,9 @@ class Quantity(models.Model):
 
     def __str__(self):
         name = self.ingredient.name
-        quantity = self.quantity
+        amount = self.amount
         measurement_unit = self.ingredient.measurement_unit
-        return f'{name}: {quantity} {measurement_unit}'
+        return f'{name}: {amount} {measurement_unit}'
 
 
 class Tag(models.Model):

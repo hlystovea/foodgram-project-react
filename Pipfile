@@ -12,6 +12,7 @@ gunicorn = "*"
 pillow = "*"
 djoser = "*"
 psycopg2-binary = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

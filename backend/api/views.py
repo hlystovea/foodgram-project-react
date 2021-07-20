@@ -1,4 +1,5 @@
-from rest_framework import viewsets
+from django.shortcuts import get_list_or_404
+from rest_framework import permissions, viewsets, mixins, generics
 
 from . import models, serializers
 
@@ -21,3 +22,9 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = models.Recipe.objects.all()
     serializer_class = serializers.RecipeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return serializers.RecipeSerializer
+        return serializers.RecipeWriteSerializer
