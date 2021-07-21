@@ -198,7 +198,7 @@ class Purchase(models.Model):
         on_delete=models.CASCADE,
         related_name='shopping_сart'
     )
-    purchase = models.ForeignKey(
+    recipe = models.ForeignKey(
         to=Recipe,
         verbose_name=_('Рецепт'),
         on_delete=models.CASCADE,
@@ -211,6 +211,6 @@ class Purchase(models.Model):
         verbose_name_plural = _('Покупки')
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'purchase'],
+                fields=['user', 'recipe'],
                 name='user_and_purchase_uniq_together'),
             ]

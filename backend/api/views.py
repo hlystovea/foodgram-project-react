@@ -33,6 +33,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = pagination.PageNumberPagination
 
+    def get_queryset(self):
+        user = self.request.user
+        is_favorited = models.Favorite.objects.filter(recipe=OuterRef('pk'), user=user)
+        is_in_shopping_cart = models.Purchase.objects.filter(recipe=OuterRef('pk'), user=user)
+        return models.Recipe.objects.annotate(is_favorited=Exists(is_favorited)) \
+                            .annotate(is_in_shopping_cart=Exists(is_in_shopping_cart))
+
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return serializers.RecipeSerializer
@@ -104,4 +111,31 @@ class SubscriptionWriteView(views.APIView):
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         message = {'errors': _('Подписка не найдена.')}
+        return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PurchaseWriteView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk=None):
+        user = request.user
+        recipe = get_object_or_404(models.Recipe, pk=pk)
+        favorite, created = models.Purchase.objects.get_or_create(
+                                                user=user, recipe=recipe)
+        if created:
+            serializer = serializers.RecipeLiteSerializer(recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        message = {
+            'errors': _(f'Рецепт {recipe} уже есть в вашем корзине покупок.')
+        }
+        return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk=None):
+        user = request.user
+        recipe = get_object_or_404(models.Recipe, pk=pk)
+        subscription = models.Purchase.objects.filter(user=user, recipe=recipe)
+        if subscription.exists():
+            subscription.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        message = {'errors': _('Этого рецепта нет в вашей корзине покупок.')}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
