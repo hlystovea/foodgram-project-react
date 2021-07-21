@@ -1,6 +1,8 @@
+from drf_base64.fields import Base64ImageField
 from django.contrib.auth import get_user_model
 from drf_base64.serializers import ModelSerializer
 from rest_framework import serializers, validators
+from rest_framework.fields import ImageField
 
 from users.serializers import CustomUserSerializer
 from . import models
@@ -43,7 +45,7 @@ class TagSerializer(serializers.ModelSerializer):
         model = models.Tag
 
 
-class RecipeSerializer(ModelSerializer):
+class RecipeSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     ingredients = QuantitySerializer(many=True, read_only=True)
@@ -55,11 +57,12 @@ class RecipeSerializer(ModelSerializer):
         model = models.Recipe
 
 
-class RecipeWriteSerializer(ModelSerializer):
+class RecipeWriteSerializer(serializers.ModelSerializer):
     author = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
     ingredients = QuantityWriteSerializer(many=True)
+    image = Base64ImageField()
 
     class Meta:
         fields = '__all__'
