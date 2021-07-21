@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.utils.translation import gettext_lazy as _
+from drf_base64.serializers import ModelSerializer
 from rest_framework import serializers, validators
 
 from users.serializers import CustomUserSerializer
@@ -43,7 +43,7 @@ class TagSerializer(serializers.ModelSerializer):
         model = models.Tag
 
 
-class RecipeSerializer(serializers.ModelSerializer):
+class RecipeSerializer(ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     ingredients = QuantitySerializer(many=True, read_only=True)
@@ -55,7 +55,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         model = models.Recipe
 
 
-class RecipeWriteSerializer(serializers.ModelSerializer):
+class RecipeWriteSerializer(ModelSerializer):
     author = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )

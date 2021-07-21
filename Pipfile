@@ -13,6 +13,7 @@ pillow = "*"
 djoser = "*"
 psycopg2-binary = "*"
 python-dotenv = "*"
+drf-base64 = "*"
 
 [dev-packages]
 
