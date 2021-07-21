@@ -15,4 +15,5 @@ v1_router.register(r'users/subscriptions', views.SubscriptionListView, basename=
 urlpatterns = [
     path('', include(v1_router.urls)),
     path('users/<int:pk>/subscribe/', views.SubscriptionWriteView.as_view()),
+    path('recipes/<int:pk>/favorite/', views.FavoriteWriteView.as_view()),
 ]

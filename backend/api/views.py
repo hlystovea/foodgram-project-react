@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Count, Exists, F, OuterRef, Q
-from django.shortcuts import get_object_or_404
+from rest_framework.generics import get_object_or_404
 from rest_framework import generics, mixins, pagination, permissions, status, views, viewsets
 from rest_framework.response import Response
 
@@ -39,6 +39,33 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return serializers.RecipeWriteSerializer
 
 
+class FavoriteWriteView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk=None):
+        user = request.user
+        recipe = get_object_or_404(models.Recipe, pk=pk)
+        favorite, created = models.Favorite.objects.get_or_create(
+                                                user=user, recipe=recipe)
+        if created:
+            serializer = serializers.RecipeLiteSerializer(recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        message = {
+            'errors': _(f'Рецепт {recipe} уже есть в вашем списке избранного.')
+        }
+        return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk=None):
+        user = request.user
+        recipe = get_object_or_404(models.Recipe, pk=pk)
+        subscription = models.Favorite.objects.filter(user=user, recipe=recipe)
+        if subscription.exists():
+            subscription.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        message = {'errors': _('Этого рецепта нет в вашем списке избранного.')}
+        return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+
 class SubscriptionListView(mixins.ListModelMixin,
                            viewsets.GenericViewSet):
     queryset = models.Subscription.objects.all()
@@ -61,7 +88,8 @@ class SubscriptionWriteView(views.APIView):
     def get(self, request, pk=None):
         user = request.user
         author = get_object_or_404(User, pk=pk)
-        subscription, created = models.Subscription.objects.get_or_create(user=user, author=author)
+        subscription, created = models.Subscription.objects.get_or_create(
+                                                      user=user, author=author)
         if created:
             return Response(status=status.HTTP_201_CREATED)
         message = {'errors': _(f'Вы уже подписаны на {author}.')}
@@ -70,7 +98,8 @@ class SubscriptionWriteView(views.APIView):
     def delete(self, request, pk=None):
         user = request.user
         author = get_object_or_404(User, pk=pk)
-        subscription = models.Subscription.objects.filter(user=user, author=author)
+        subscription = models.Subscription.objects.filter(
+                                                user=user, author=author)
         if subscription.exists():
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

@@ -53,6 +53,6 @@ class SubscriptionAdmin(MixinAdmin):
 
 @admin.register(models.Favorite)
 class FavoriteAdmin(MixinAdmin):
-    list_display = ('id', 'user', 'favorite')
-    search_fields = ('user', 'favorite')
-    autocomplete_fields = ('user', 'favorite')
+    list_display = ('id', 'user', 'recipe')
+    search_fields = ('user', 'recipe')
+    autocomplete_fields = ('user', 'recipe')

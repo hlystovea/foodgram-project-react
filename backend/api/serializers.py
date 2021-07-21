@@ -1,8 +1,7 @@
 from drf_extra_fields.fields import Base64ImageField
 from django.contrib.auth import get_user_model
-from drf_base64.serializers import ModelSerializer
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers, validators
-from rest_framework.fields import ImageField
 
 from users.serializers import CustomUserSerializer
 from . import models
@@ -107,14 +106,34 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return instance
 
 
-class SubscriptionRecipeSerializer(serializers.ModelSerializer):
+class RecipeLiteSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'name', 'image', 'cooking_time')
         model = models.Recipe
 
 
+class FavoriteSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+    recipe = serializers.PrimaryKeyRelatedField(
+        queryset=models.Recipe.objects.all()
+    )
+
+    class Meta:
+        model = models.Favorite
+        fields = '__all__'
+        validators = [
+            validators.UniqueTogetherValidator(
+                queryset=models.Favorite.objects.all(),
+                fields=['user', 'recipe'],
+                message=_('Рецепт уже в вашем списке избранного.')
+            )
+        ]
+
+
 class SubscriptionSerializer(CustomUserSerializer):
-    recipes = SubscriptionRecipeSerializer(many=True, read_only=True)
+    recipes = RecipeLiteSerializer(many=True, read_only=True)
     recipes_count = serializers.IntegerField(read_only=True)
 
     class Meta(CustomUserSerializer.Meta):
