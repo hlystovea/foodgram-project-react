@@ -62,7 +62,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     ingredients = QuantityWriteSerializer(many=True)
 
     class Meta:
-        exclude = ['image']
+        fields = '__all__'
         model = models.Recipe
 
     def create(self, validated_data):
