@@ -1,4 +1,4 @@
-from drf_base64.fields import Base64ImageField
+from drf_extra_fields.fields import Base64ImageField
 from django.contrib.auth import get_user_model
 from drf_base64.serializers import ModelSerializer
 from rest_framework import serializers, validators
