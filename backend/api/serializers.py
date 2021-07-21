@@ -1,18 +1,11 @@
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
+from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers, validators
 
+from users.serializers import CustomUserSerializer
 from . import models
 
 User = get_user_model()
-
-
-class AuthorSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.BooleanField(default=False)
-
-    class Meta:
-        fields = ('id', 'username', 'email',
-                  'first_name', 'last_name', 'is_subscribed')
-        model = models.User
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -51,7 +44,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer(read_only=True)
+    author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     ingredients = QuantitySerializer(many=True, read_only=True)
     is_favorited = serializers.BooleanField(default=False)
@@ -109,3 +102,19 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             )
 
         return instance
+
+
+class SubscriptionRecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('id', 'name', 'image', 'cooking_time')
+        model = models.Recipe
+
+
+class SubscriptionSerializer(CustomUserSerializer):
+    recipes = SubscriptionRecipeSerializer(many=True, read_only=True)
+    recipes_count = serializers.IntegerField(read_only=True)
+
+    class Meta(CustomUserSerializer.Meta):
+        fields = ('id', 'username', 'email', 'first_name', 'last_name',
+                  'is_subscribed', 'recipes', 'recipes_count')
+        model = User
