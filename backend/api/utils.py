@@ -5,18 +5,18 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 
-pdfmetrics.registerFont(TTFont('Fundamental', '/code/fonts/fundamental-brigade.ttf'))
+pdfmetrics.registerFont(TTFont('Calibri-Light', '/code/fonts/Calibri-Light.ttf'))
 
 
 def get_shopping_list(ingredients=None):
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer)
 
-    p.setFont('Fundamental', 18)
+    p.setFont('Calibri-Light', 18)
     p.drawString(50, 800, 'Foodgram. Список продуктов.')
     p.line(50, 790, 550, 790)
 
-    p.setFont('Fundamental', 16)
+    p.setFont('Calibri-Light', 16)
     x = 50
     y = 750
     if ingredients:
