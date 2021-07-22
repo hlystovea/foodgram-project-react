@@ -90,7 +90,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
-
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
         instance.image = validated_data.get('image', instance.image)
@@ -108,7 +107,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 ingredient=ingredient['id'],
                 amount=ingredient['amount'],
             )
-
+        instance.save()
         return instance
 
 
