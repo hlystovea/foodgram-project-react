@@ -44,14 +44,20 @@ class TagSerializer(serializers.ModelSerializer):
         model = models.Tag
 
 
-class RecipeSerializer(serializers.ModelSerializer):
+class RecipeLiteSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('id', 'name', 'image', 'cooking_time')
+        model = models.Recipe
+
+
+class RecipeSerializer(RecipeLiteSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     ingredients = QuantitySerializer(many=True, read_only=True)
     is_favorited = serializers.BooleanField(default=False)
     is_in_shopping_cart = serializers.BooleanField(default=False)
 
-    class Meta:
+    class Meta(RecipeLiteSerializer.Meta):
         fields = '__all__'
         model = models.Recipe
 
@@ -106,10 +112,14 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return instance
 
 
-class RecipeLiteSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = ('id', 'name', 'image', 'cooking_time')
-        model = models.Recipe
+class SubscriptionSerializer(CustomUserSerializer):
+    recipes = RecipeLiteSerializer(many=True, read_only=True)
+    recipes_count = serializers.IntegerField(read_only=True)
+
+    class Meta(CustomUserSerializer.Meta):
+        fields = ('id', 'username', 'email', 'first_name', 'last_name',
+                  'is_subscribed', 'recipes', 'recipes_count')
+        model = User
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -130,13 +140,3 @@ class FavoriteSerializer(serializers.ModelSerializer):
                 message=_('Рецепт уже в вашем списке избранного.')
             )
         ]
-
-
-class SubscriptionSerializer(CustomUserSerializer):
-    recipes = RecipeLiteSerializer(many=True, read_only=True)
-    recipes_count = serializers.IntegerField(read_only=True)
-
-    class Meta(CustomUserSerializer.Meta):
-        fields = ('id', 'username', 'email', 'first_name', 'last_name',
-                  'is_subscribed', 'recipes', 'recipes_count')
-        model = User

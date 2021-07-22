@@ -56,3 +56,10 @@ class FavoriteAdmin(MixinAdmin):
     list_display = ('id', 'user', 'recipe')
     search_fields = ('user', 'recipe')
     autocomplete_fields = ('user', 'recipe')
+
+
+@admin.register(models.Purchase)
+class PurchaseAdmin(MixinAdmin):
+    list_display = ('id', 'user', 'recipe')
+    search_fields = ('user', 'recipe')
+    autocomplete_fields = ('user', 'recipe')

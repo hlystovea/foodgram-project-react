@@ -7,7 +7,6 @@ name = "pypi"
 django = "*"
 djangorestframework = "*"
 markdown = "*"
-django-filter = "*"
 gunicorn = "*"
 pillow = "*"
 djoser = "*"
@@ -15,6 +14,7 @@ psycopg2-binary = "*"
 python-dotenv = "*"
 drf-base64 = "*"
 drf-extra-fields = "*"
+django-filter = "*"
 
 [dev-packages]
 

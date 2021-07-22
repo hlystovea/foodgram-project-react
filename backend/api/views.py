@@ -1,11 +1,13 @@
 from django.contrib.auth import get_user_model
+from django_filters.rest_framework import DjangoFilterBackend
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Count, Exists, F, OuterRef, Q
 from rest_framework.generics import get_object_or_404
 from rest_framework import generics, mixins, pagination, permissions, status, views, viewsets
 from rest_framework.response import Response
 
-from . import models, serializers
+from .filters import IngredientFilter, RecipeFilter
+from . import filters, models, serializers
 
 User = get_user_model()
 
@@ -13,6 +15,7 @@ User = get_user_model()
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.Ingredient.objects.all()
     serializer_class = serializers.IngredientSerializer
+    filter_class = IngredientFilter
     pagination_class = None
 
 
@@ -31,6 +34,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = models.Recipe.objects.all()
     serializer_class = serializers.RecipeSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_class = RecipeFilter
     pagination_class = pagination.PageNumberPagination
 
     def get_queryset(self):
@@ -47,6 +51,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class FavoriteWriteView(views.APIView):
+    lookup_field = 'id'
+    lookup_value_regex = '[0-9]{32}'
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk=None):
