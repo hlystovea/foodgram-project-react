@@ -5,7 +5,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 
-pdfmetrics.registerFont(TTFont('Fundamental', '..\\fonts\\fundamental-brigade.ttf'))
+pdfmetrics.registerFont(TTFont('Fundamental', '/code/fonts/fundamental-brigade.ttf'))
 
 
 def get_shopping_list(ingredients=None):
