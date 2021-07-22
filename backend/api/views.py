@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Exists, OuterRef
+from django.db.models import Count, Exists, OuterRef, Q, Sum, IntegerField, Subquery, F, Value
 from django.http import FileResponse
 from django.utils.translation import gettext_lazy as _
 from rest_framework import mixins, pagination, permissions, status, viewsets
@@ -104,6 +104,7 @@ class SubscriptionListView(mixins.ListModelMixin,
 
 
 class SubscriptionWriteView(APIView):
+    serializer_class = serializers.SubscriptionSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk=None):
@@ -112,7 +113,8 @@ class SubscriptionWriteView(APIView):
         obj, created = Subscription.objects.get_or_create(
                                             user=user, author=author)
         if created:
-            return Response(status=status.HTTP_201_CREATED)
+            serializer = self.serializer_class(author, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         message = {'errors': _(f'Вы уже подписаны на {author}.')}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
