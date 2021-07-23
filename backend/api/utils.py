@@ -5,10 +5,10 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 
-pdfmetrics.registerFont(TTFont('Calibri-Light', '/code/fonts/Calibri-Light.ttf'))
+pdfmetrics.registerFont(TTFont('Calibri-Light', '../fonts/Calibri-Light.ttf'))
 
 
-def get_shopping_list(ingredients=None):
+def get_pdf(purchases):
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer)
 
@@ -19,9 +19,10 @@ def get_shopping_list(ingredients=None):
     p.setFont('Calibri-Light', 16)
     x = 50
     y = 750
-    if ingredients:
-        for ingredient in ingredients:
-            p.drawString(x, y, str(ingredient))
+    if purchases:
+        for i in purchases:
+            string = f'{i["name"].capitalize()} - {i["total"]} {i["unit"]}'
+            p.drawString(x, y, string)
             y -= 20
     else:
         p.drawString(x, y, 'Список продуктов пуст.')

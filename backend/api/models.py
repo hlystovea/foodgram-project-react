@@ -71,7 +71,7 @@ class Tag(models.Model):
     )
     color = fields.ColorField(
         verbose_name=_('Цвет'),
-        default='#FF0000'
+        default='#FF0000',
     )
     slug = models.SlugField(
         verbose_name=_('Слаг'),
@@ -196,12 +196,13 @@ class Purchase(models.Model):
         to=User,
         verbose_name=_('Пользователь'),
         on_delete=models.CASCADE,
-        related_name='shopping_сart'
+        related_name='shopping_cart',
     )
     recipe = models.ForeignKey(
         to=Recipe,
         verbose_name=_('Рецепт'),
         on_delete=models.CASCADE,
+        related_name='purchases',
     )
 
     class Meta:

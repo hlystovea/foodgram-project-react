@@ -2,16 +2,16 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count, Exists, OuterRef, Q, Sum, IntegerField, Subquery, F, Value
 from django.http import FileResponse
 from django.utils.translation import gettext_lazy as _
-from rest_framework import mixins, pagination, permissions, status, viewsets
+from rest_framework import mixins, permissions, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from . import serializers
 from .models import Ingredient, Favorite, Quantity, Tag, Recipe, Subscription, Purchase
+from .pagination import CustomPagination
 from .filters import IngredientFilter, RecipeFilter
-from .utils import get_shopping_list
+from .utils import get_pdf
 
 User = get_user_model()
 
@@ -39,7 +39,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.RecipeSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_class = RecipeFilter
-    pagination_class = pagination.PageNumberPagination
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         user = self.request.user
@@ -55,13 +55,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False)
     def download_shopping_cart(self, request):
-        recipes = self.get_queryset().filter(is_in_shopping_cart=True)
-        ingredients = Quantity.objects.filter(recipe__in=recipes)
-        file = get_shopping_list(ingredients)
+        ingredients = Quantity.objects.filter(
+            recipe__purchases__user=request.user
+        )
+        purchases = ingredients.values(
+            name=F('ingredient__name'),
+            unit=F('ingredient__measurement_unit')
+        ).annotate(
+            total=Sum('amount')
+        )
+        file = get_pdf(purchases)
         return FileResponse(file, as_attachment=True, filename='purchases.pdf')
 
 
-class FavoriteWriteView(APIView):
+class FavoriteWriteView(views.APIView):
     lookup_field = 'id'
     lookup_value_regex = '[0-9]{32}'
     permission_classes = [permissions.IsAuthenticated]
@@ -92,7 +99,7 @@ class SubscriptionListView(mixins.ListModelMixin,
     queryset = Subscription.objects.all()
     serializer_class = serializers.SubscriptionSerializer
     permission_classes = [permissions.IsAuthenticated]
-    pagination_class = pagination.PageNumberPagination
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         user = self.request.user
@@ -103,7 +110,7 @@ class SubscriptionListView(mixins.ListModelMixin,
                            .annotate(is_subscribed=Exists(subscribtions))
 
 
-class SubscriptionWriteView(APIView):
+class SubscriptionWriteView(views.APIView):
     serializer_class = serializers.SubscriptionSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -113,7 +120,12 @@ class SubscriptionWriteView(APIView):
         obj, created = Subscription.objects.get_or_create(
                                             user=user, author=author)
         if created:
-            serializer = self.serializer_class(author, context={'request': request})
+            serializer = self.serializer_class(
+                author,
+                context={
+                    'request': request
+                }
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         message = {'errors': _(f'Вы уже подписаны на {author}.')}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
@@ -129,7 +141,7 @@ class SubscriptionWriteView(APIView):
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PurchaseWriteView(APIView):
+class PurchaseWriteView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk=None):

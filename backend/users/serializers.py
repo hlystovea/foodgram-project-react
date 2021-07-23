@@ -22,4 +22,4 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 
     class Meta(UserCreateSerializer.Meta):
         model = User
-        fields = ('id', 'username', 'email', 'password')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password')
