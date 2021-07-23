@@ -1,4 +1,3 @@
-from django.db.models import Q
 from django_filters import BooleanFilter, CharFilter, FilterSet, NumberFilter
 
 from .models import Ingredient, Recipe
@@ -8,9 +7,7 @@ class IngredientFilter(FilterSet):
     name = CharFilter(field_name='name', method='filter_name')
 
     def filter_name(self, queryset, name, value):
-        return queryset.filter(
-            Q(name__istartswith=value) | Q(name__icontains=value)
-        )
+        return queryset.filter(name__istartswith=value)
 
     class Meta:
         model = Ingredient
