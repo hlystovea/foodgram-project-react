@@ -2,11 +2,10 @@ from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
 
-User = get_user_model()
-
-
 from .utils import get_limit
 from api import serializers as srlz
+
+User = get_user_model()
 
 
 class CustomUserSerializer(serializers.ModelSerializer):

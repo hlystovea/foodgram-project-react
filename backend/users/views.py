@@ -23,6 +23,7 @@ class CustomUserViewSet(UserViewSet):
         methods=['get'],
         detail=False,
         permission_classes=[permissions.IsAuthenticated],
+        pagination_class=CustomPagination,
     )
     def subscriptions(self, request):
         user = self.request.user
@@ -30,16 +31,16 @@ class CustomUserViewSet(UserViewSet):
             author=OuterRef('pk'),
             user=user,
         )
-        authors = User.objects.filter(subscribers__user=user) \
-                              .annotate(recipes_count=Count('recipes')) \
-                              .annotate(is_subscribed=Exists(subscribtion))
-        serializer = SubscriptionSerializer(
-            authors,
-            context={
-                'request': request
-            },
-            many=True,
-        )
+        queryset = User.objects.filter(subscribers__user=user) \
+                               .annotate(recipes_count=Count('recipes')) \
+                               .annotate(is_subscribed=Exists(subscribtion))
+        context = {'request': request}
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = SubscriptionSerializer(page, context=context, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = SubscriptionSerializer(queryset, context=context, many=True)
         return Response(serializer.data, status=HTTPStatus.OK)
 
     @action(
