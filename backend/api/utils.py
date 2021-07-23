@@ -1,8 +1,13 @@
 import io
+from http import HTTPStatus
 
+from django.utils.translation import gettext_lazy as _
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from rest_framework.response import Response
+
+from . import serializers
 
 
 pdfmetrics.registerFont(TTFont('Calibri-Light', '../fonts/Calibri-Light.ttf'))
@@ -33,12 +38,21 @@ def get_pdf(purchases):
     return buffer
 
 
-def get_limit(request):
-    try:
-        limit = int(request.query_params['recipes_limit'])
-        if limit <= 0:
-            raise ValueError()
-        return limit
-    except (KeyError, ValueError):
-        pass
-    return None
+def binder(request, recipe, m2m_model):
+    user = request.user
+    if request.method == 'GET':
+        obj, created = m2m_model.objects.get_or_create(
+            user=user,
+            recipe=recipe,
+        )
+        if created:
+            serializer = serializers.RecipeLiteSerializer(recipe)
+            return Response(serializer.data, status=HTTPStatus.CREATED)
+    message = {'errors': _(f'Рецепт {recipe} уже добавлен.')}
+    if request.method == 'DELETE':
+        obj = m2m_model.objects.filter(user=user, recipe=recipe)
+        if obj.exists():
+            obj.delete()
+            return Response(status=HTTPStatus.NO_CONTENT)
+        message = {'errors': _('Рецепта {recipe} нет в списке.')}
+    return Response(message, status=HTTPStatus.BAD_REQUEST)

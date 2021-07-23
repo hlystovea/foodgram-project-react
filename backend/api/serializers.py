@@ -3,9 +3,8 @@ from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers, validators
 
-from .utils import get_limit
-from users.serializers import CustomUserSerializer
 from . import models
+from users.serializers import CustomUserSerializer
 
 User = get_user_model()
 
@@ -110,22 +109,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             )
         instance.save()
         return instance
-
-
-class SubscriptionSerializer(CustomUserSerializer):
-    recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.IntegerField(read_only=True)
-
-    class Meta(CustomUserSerializer.Meta):
-        fields = ('id', 'username', 'email', 'first_name', 'last_name',
-                  'is_subscribed', 'recipes', 'recipes_count')
-        model = User
-
-    def get_recipes(self, obj):
-        serializer = RecipeLiteSerializer(obj.recipes, many=True)
-        request = self.context['request']
-        limit = get_limit(request)
-        return serializer.data[:limit]
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
