@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core import validators
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -164,6 +165,19 @@ class Subscription(models.Model):
 
     def __str__(self):
         return f'Подписка: {self.user.username} на {self.author.username}'
+
+    def clean(self):
+        errors = {}
+        if self.user == self.author:
+            errors['author'] = ValidationError(
+                _('Пользователь не может быть подписан на самого себя.')
+            )
+        if errors:
+            raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class Favorite(models.Model):

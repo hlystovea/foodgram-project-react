@@ -5,9 +5,11 @@ from django.utils.translation import gettext_lazy as _
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from . import serializers
+from .models import Recipe
 
 
 pdfmetrics.registerFont(TTFont('Calibri-Light', '../fonts/Calibri-Light.ttf'))
@@ -38,21 +40,20 @@ def get_pdf(purchases):
     return buffer
 
 
-def binder(request, recipe, m2m_model):
-    user = request.user
+def binder(request, pk, m2m_model, serializer):
+    recipe = get_object_or_404(Recipe, pk=pk)
     if request.method == 'GET':
-        obj, created = m2m_model.objects.get_or_create(
-            user=user,
-            recipe=recipe,
-        )
-        if created:
-            serializer = serializers.RecipeLiteSerializer(recipe)
-            return Response(serializer.data, status=HTTPStatus.CREATED)
-    message = {'errors': _(f'Рецепт {recipe} уже добавлен.')}
+        context = {'request': request}
+        data = {'recipe': pk}
+        serializer = serializer(data=data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        serializer = serializers.RecipeLiteSerializer(recipe)
+        return Response(serializer.data, status=HTTPStatus.CREATED)
     if request.method == 'DELETE':
-        obj = m2m_model.objects.filter(user=user, recipe=recipe)
+        obj = m2m_model.objects.filter(user=request.user, recipe=recipe)
         if obj.exists():
             obj.delete()
             return Response(status=HTTPStatus.NO_CONTENT)
         message = {'errors': _('Рецепта {recipe} нет в списке.')}
-    return Response(message, status=HTTPStatus.BAD_REQUEST)
+        return Response(message, status=HTTPStatus.BAD_REQUEST)

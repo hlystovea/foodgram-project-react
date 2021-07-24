@@ -11,7 +11,8 @@ from rest_framework.response import Response
 
 from api.models import Subscription
 from api.pagination import CustomPagination
-from .serializers import SubscriptionSerializer
+from .serializers import (SubscriptionReadSerializer,
+                          SubscriptionWriteSerializer)
 
 User = get_user_model()
 
@@ -36,14 +37,14 @@ class CustomUserViewSet(UserViewSet):
         context = {'request': request}
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = SubscriptionSerializer(
+            serializer = SubscriptionReadSerializer(
                 page,
                 context=context,
                 many=True,
             )
             return self.get_paginated_response(serializer.data)
 
-        serializer = SubscriptionSerializer(
+        serializer = SubscriptionReadSerializer(
             queryset,
             context=context,
             many=True,
@@ -56,22 +57,22 @@ class CustomUserViewSet(UserViewSet):
         permission_classes=[permissions.IsAuthenticated],
     )
     def subscribe(self, request, id=None):
-        user = request.user
         author = get_object_or_404(User, id=id)
         if request.method == 'GET':
-            obj, created = Subscription.objects.get_or_create(
-                user=user,
-                author=author,
+            context = {'request': request}
+            data = {'author': id}
+            serializer = SubscriptionWriteSerializer(
+                data=data,
+                context=context,
             )
-            if created:
-                context = {'request': request}
-                serializer = SubscriptionSerializer(author, context=context)
-                return Response(serializer.data, status=HTTPStatus.CREATED)
-        message = {'errors': _(f'Вы уже подписаны на {author}.')}
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            serializer = SubscriptionReadSerializer(author, context=context)
+            return Response(serializer.data, status=HTTPStatus.CREATED)
         if request.method == 'DELETE':
-            obj = Subscription.objects.filter(user=user, author=author)
+            obj = Subscription.objects.filter(user=request.user, author=author)
             if obj.exists():
                 obj.delete()
                 return Response(status=HTTPStatus.NO_CONTENT)
             message = {'errors': _('Подписка не найдена.')}
-        return Response(message, status=HTTPStatus.BAD_REQUEST)
+            return Response(message, status=HTTPStatus.BAD_REQUEST)

@@ -112,11 +112,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    user = serializers.HiddenField(
-        default=serializers.CurrentUserDefault()
-    )
     recipe = serializers.PrimaryKeyRelatedField(
         queryset=models.Recipe.objects.all()
+    )
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
     )
 
     class Meta:
@@ -125,7 +125,27 @@ class FavoriteSerializer(serializers.ModelSerializer):
         validators = [
             validators.UniqueTogetherValidator(
                 queryset=models.Favorite.objects.all(),
-                fields=['user', 'recipe'],
-                message=_('Рецепт уже в вашем списке избранного.')
-            )
+                fields=['recipe', 'user'],
+                message=_('Этот рецепт уже есть в вашем списке избранного.')
+            ),
+        ]
+
+
+class PurchaseSerializer(serializers.ModelSerializer):
+    recipe = serializers.PrimaryKeyRelatedField(
+        queryset=models.Recipe.objects.all()
+    )
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = models.Purchase
+        fields = '__all__'
+        validators = [
+            validators.UniqueTogetherValidator(
+                queryset=models.Purchase.objects.all(),
+                fields=['recipe', 'user'],
+                message=_('Этот рецепт уже есть в вашем списке покупок.')
+            ),
         ]

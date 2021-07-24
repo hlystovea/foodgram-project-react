@@ -1,9 +1,11 @@
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer
-from rest_framework import serializers
+from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers, validators
 
 from .utils import get_limit
 from api import serializers as srlz
+from api.models import Subscription
 
 User = get_user_model()
 
@@ -28,7 +30,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         fields = ('username', 'first_name', 'last_name', 'email', 'password')
 
 
-class SubscriptionSerializer(CustomUserSerializer):
+class SubscriptionReadSerializer(CustomUserSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.IntegerField(read_only=True)
 
@@ -42,3 +44,28 @@ class SubscriptionSerializer(CustomUserSerializer):
         request = self.context['request']
         limit = get_limit(request)
         return serializer.data[:limit]
+
+
+class SubscriptionWriteSerializer(serializers.ModelSerializer):
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+
+    def validate_author(self, author):
+        if self.context['request'].user == author:
+            raise serializers.ValidationError(
+                _('Вы пытаетесь подписаться на самого себя.')
+            )
+        return author
+
+    class Meta:
+        model = Subscription
+        fields = '__all__'
+        validators = [
+            validators.UniqueTogetherValidator(
+                queryset=Subscription.objects.all(),
+                fields=['author', 'user'],
+                message=_('Вы уже подписаны на этого автора.')
+            ),
+        ]

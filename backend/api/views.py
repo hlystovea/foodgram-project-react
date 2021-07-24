@@ -3,7 +3,6 @@ from django.db.models import Exists, F, OuterRef, Sum
 from django.http import FileResponse
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
-from rest_framework.generics import get_object_or_404
 
 from . import serializers
 from .filters import IngredientFilter, RecipeFilter
@@ -19,13 +18,6 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.IngredientSerializer
     permission_classes = [permissions.AllowAny]
     filter_class = IngredientFilter
-    pagination_class = None
-
-
-class QuantityViewSet(viewsets.ModelViewSet):
-    queryset = Quantity.objects.all()
-    serializer_class = serializers.QuantitySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = None
 
 
@@ -81,8 +73,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated],
     )
     def favorite(self, request, pk=None):
-        recipe = get_object_or_404(Recipe, pk=pk)
-        return binder(request, recipe, Favorite)
+        return binder(request, pk, Favorite, serializers.FavoriteSerializer)
 
     @action(
         methods=['get', 'delete'],
@@ -90,5 +81,4 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated],
     )
     def shopping_cart(self, request, pk=None):
-        recipe = get_object_or_404(Recipe, pk=pk)
-        return binder(request, recipe, Purchase)
+        return binder(request, pk, Purchase, serializers.PurchaseSerializer)
