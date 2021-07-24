@@ -4,9 +4,9 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count, Exists, OuterRef
 from django.utils.translation import gettext_lazy as _
 from djoser.views import UserViewSet
-from rest_framework import permissions
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.models import Subscription
@@ -20,11 +20,17 @@ User = get_user_model()
 class CustomUserViewSet(UserViewSet):
     pagination_class = CustomPagination
 
-    @action(
-        methods=['get'],
-        detail=False,
-        permission_classes=[permissions.IsAuthenticated],
-    )
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return self.queryset
+        subscription = Subscription.objects.filter(
+            author=OuterRef('pk'),
+            user=user
+        )
+        return self.queryset.annotate(is_subscribed=Exists(subscription))
+
+    @action(['get'], False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         user = self.request.user
         subscribtion = Subscription.objects.filter(
@@ -51,11 +57,7 @@ class CustomUserViewSet(UserViewSet):
         )
         return Response(serializer.data, status=HTTPStatus.OK)
 
-    @action(
-        methods=['get', 'delete'],
-        detail=True,
-        permission_classes=[permissions.IsAuthenticated],
-    )
+    @action(['get', 'delete'], True, permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
         author = get_object_or_404(User, id=id)
         if request.method == 'GET':
