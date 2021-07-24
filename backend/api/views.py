@@ -1,37 +1,39 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, F, OuterRef, Sum
 from django.http import FileResponse
-from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from . import serializers
 from .filters import IngredientFilter, RecipeFilter
 from .models import Ingredient, Favorite, Quantity, Tag, Recipe, Purchase
 from .pagination import CustomPagination
+from .permissions import IsAdminOrAuthorOrReadOnly
 from .utils import binder, get_pdf
 
 User = get_user_model()
 
 
-class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = serializers.IngredientSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AllowAny]
     filter_class = IngredientFilter
     pagination_class = None
 
 
-class TagViewSet(viewsets.ReadOnlyModelViewSet):
+class TagViewSet(ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = serializers.TagSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AllowAny]
     pagination_class = None
 
 
-class RecipeViewSet(viewsets.ModelViewSet):
+class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = serializers.RecipeSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrAuthorOrReadOnly]
     filter_class = RecipeFilter
     pagination_class = CustomPagination
 
@@ -52,7 +54,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         methods=['get'],
         detail=False,
-        permission_classes=[permissions.IsAuthenticated],
+        permission_classes=[IsAuthenticated],
     )
     def download_shopping_cart(self, request):
         ingredients = Quantity.objects.filter(
@@ -70,7 +72,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         methods=['get', 'delete'],
         detail=True,
-        permission_classes=[permissions.IsAuthenticated],
+        permission_classes=[IsAuthenticated],
     )
     def favorite(self, request, pk=None):
         return binder(request, pk, Favorite, serializers.FavoriteSerializer)
@@ -78,7 +80,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         methods=['get', 'delete'],
         detail=True,
-        permission_classes=[permissions.IsAuthenticated],
+        permission_classes=[IsAuthenticated],
     )
     def shopping_cart(self, request, pk=None):
         return binder(request, pk, Purchase, serializers.PurchaseSerializer)

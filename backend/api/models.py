@@ -109,16 +109,24 @@ class Recipe(models.Model):
     text = models.TextField(
         verbose_name=_('Рецепт'),
     )
+    pub_date = models.DateTimeField(
+        verbose_name=_('Дата публикации'),
+        auto_now_add=True,
+    )
+    change_date = models.DateTimeField(
+        verbose_name=_('Дата изменения'),
+        auto_now=True,
+    )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name=_('Время приготовления, мин'),
         validators=[
             validators.MinValueValidator(
                 1,
-                message='Время не может быть меньше 1 минуты',
+                message=_('Время не может быть меньше 1 минуты'),
             ),
             validators.MaxValueValidator(
                 1000,
-                message='Слишком долго, укажите время в минутах',
+                message=_('Слишком долго, укажите время в минутах'),
             ),
         ]
     )
@@ -130,7 +138,7 @@ class Recipe(models.Model):
 
     class Meta:
         app_label = 'api'
-        ordering = ('-id', )
+        ordering = ('-pub_date', )
         verbose_name = _('Рецепт')
         verbose_name_plural = _('Рецепты')
 
@@ -191,6 +199,7 @@ class Favorite(models.Model):
         to=Recipe,
         verbose_name=_('Рецепт'),
         on_delete=models.CASCADE,
+        related_name='additions',
     )
 
     class Meta:
