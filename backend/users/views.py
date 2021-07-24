@@ -23,7 +23,6 @@ class CustomUserViewSet(UserViewSet):
         methods=['get'],
         detail=False,
         permission_classes=[permissions.IsAuthenticated],
-        pagination_class=CustomPagination,
     )
     def subscriptions(self, request):
         user = self.request.user
@@ -37,10 +36,18 @@ class CustomUserViewSet(UserViewSet):
         context = {'request': request}
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = SubscriptionSerializer(page, context=context, many=True)
+            serializer = SubscriptionSerializer(
+                page,
+                context=context,
+                many=True,
+            )
             return self.get_paginated_response(serializer.data)
 
-        serializer = SubscriptionSerializer(queryset, context=context, many=True)
+        serializer = SubscriptionSerializer(
+            queryset,
+            context=context,
+            many=True,
+        )
         return Response(serializer.data, status=HTTPStatus.OK)
 
     @action(
