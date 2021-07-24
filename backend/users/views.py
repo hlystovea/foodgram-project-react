@@ -71,10 +71,11 @@ class CustomUserViewSet(UserViewSet):
             serializer.save()
             serializer = SubscriptionReadSerializer(author, context=context)
             return Response(serializer.data, status=HTTPStatus.CREATED)
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             obj = Subscription.objects.filter(user=request.user, author=author)
             if obj.exists():
                 obj.delete()
                 return Response(status=HTTPStatus.NO_CONTENT)
             message = {'errors': _('Подписка не найдена.')}
             return Response(message, status=HTTPStatus.BAD_REQUEST)
+        return None
