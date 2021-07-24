@@ -71,7 +71,7 @@ class CustomUserViewSet(UserViewSet):
             serializer.save()
             serializer = SubscriptionReadSerializer(author, context=context)
             return Response(serializer.data, status=HTTPStatus.CREATED)
-        if request.method == 'DELETE':
+        elif request.method == 'DELETE':
             obj = Subscription.objects.filter(user=request.user, author=author)
             if obj.exists():
                 obj.delete()

@@ -56,3 +56,4 @@ def binder(request, pk, m2m_model, serializer):
             return Response(status=HTTPStatus.NO_CONTENT)
         message = {'errors': _('Рецепта {recipe} нет в списке.')}
         return Response(message, status=HTTPStatus.BAD_REQUEST)
+    return None

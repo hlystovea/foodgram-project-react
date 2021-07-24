@@ -168,8 +168,9 @@ class Subscription(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'],
-                name='user_and_author_uniq_together'),
-            ]
+                name='user_and_author_uniq_together',
+            ),
+        ]
 
     def __str__(self):
         return f'Подписка: {self.user.username} на {self.author.username}'
@@ -210,8 +211,9 @@ class Favorite(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
-                name='user_and_recipe_uniq_together'),
-            ]
+                name='user_and_recipe_uniq_together',
+            ),
+        ]
 
 
 class Purchase(models.Model):
@@ -236,5 +238,6 @@ class Purchase(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
-                name='user_and_purchase_uniq_together'),
-            ]
+                name='user_and_purchase_uniq_together',
+            ),
+        ]
