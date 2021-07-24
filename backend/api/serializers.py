@@ -1,10 +1,10 @@
-from drf_extra_fields.fields import Base64ImageField
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers, validators
+from users.serializers import CustomUserSerializer
 
 from . import models
-from users.serializers import CustomUserSerializer
 
 User = get_user_model()
 

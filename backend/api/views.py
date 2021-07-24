@@ -7,7 +7,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from . import serializers
 from .filters import IngredientFilter, RecipeFilter
-from .models import Ingredient, Favorite, Quantity, Tag, Recipe, Purchase
+from .models import Favorite, Ingredient, Purchase, Quantity, Recipe, Tag
 from .pagination import CustomPagination
 from .permissions import IsAdminOrAuthorOrReadOnly
 from .utils import binder, get_pdf

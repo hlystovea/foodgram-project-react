@@ -1,11 +1,11 @@
 from django.contrib.auth import get_user_model
-from djoser.serializers import UserCreateSerializer
 from django.utils.translation import gettext_lazy as _
+from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers, validators
 
-from .utils import get_limit
 from api import serializers as srlz
 from api.models import Subscription
+from .utils import get_limit
 
 User = get_user_model()
 

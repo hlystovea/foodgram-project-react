@@ -2,15 +2,14 @@ import io
 from http import HTTPStatus
 
 from django.utils.translation import gettext_lazy as _
-from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from . import serializers
 from .models import Recipe
-
 
 pdfmetrics.registerFont(TTFont('Calibri-Light', '../fonts/Calibri-Light.ttf'))
 
