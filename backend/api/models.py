@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core import validators
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -10,11 +11,11 @@ User = get_user_model()
 
 class Ingredient(models.Model):
     name = models.CharField(
-        verbose_name='Наименование',
+        verbose_name=_('Наименование'),
         max_length=200,
     )
     measurement_unit = models.CharField(
-        verbose_name='Единица измерения',
+        verbose_name=_('Единица измерения'),
         max_length=200,
     )
 
@@ -28,17 +29,68 @@ class Ingredient(models.Model):
         return f'{self.name}, {self.measurement_unit}'
 
 
-class Recipe(models.Model):
-    ingredients = models.ManyToManyField(
+class Quantity(models.Model):
+    ingredient = models.ForeignKey(
         to=Ingredient,
-        verbose_name=_('Ингредиенты'),
-        related_name='recipes',
+        verbose_name=_('Ингредиент'),
+        on_delete=models.CASCADE,
     )
-    tags = models.ManyToManyField(
-        to='Tag',
-        verbose_name=_('Теги'),
-        related_name='recipes',
+    recipe = models.ForeignKey(
+        to='Recipe',
+        verbose_name=_('Рецепт'),
+        on_delete=models.CASCADE,
+        related_name='ingredients',
     )
+    amount = models.PositiveSmallIntegerField(
+        verbose_name=_('Количество'),
+        validators=[
+            validators.MaxValueValidator(
+                99999,
+                message='Слишком много, проверьте единицы измерения',
+            ),
+        ]
+    )
+
+    class Meta:
+        app_label = 'api'
+        ordering = ('ingredient', )
+        verbose_name = _('Количество ингредиента')
+        verbose_name_plural = _('Количества ингредиентов')
+
+    def __str__(self):
+        name = self.ingredient.name
+        amount = self.amount
+        measurement_unit = self.ingredient.measurement_unit
+        return f'{name}: {amount} {measurement_unit}'
+
+
+class Tag(models.Model):
+    name = models.CharField(
+        verbose_name=_('Наименование'),
+        max_length=200,
+        unique=True,
+    )
+    color = fields.ColorField(
+        verbose_name=_('Цвет'),
+        default='#FF0000',
+    )
+    slug = models.SlugField(
+        verbose_name=_('Слаг'),
+        max_length=200,
+        unique=True,
+    )
+
+    class Meta:
+        app_label = 'api'
+        ordering = ('name', )
+        verbose_name = _('Тег')
+        verbose_name_plural = _('Теги')
+
+    def __str__(self):
+        return self.name
+
+
+class Recipe(models.Model):
     author = models.ForeignKey(
         to=User,
         verbose_name=_('Автор'),
@@ -57,23 +109,36 @@ class Recipe(models.Model):
     text = models.TextField(
         verbose_name=_('Рецепт'),
     )
+    pub_date = models.DateTimeField(
+        verbose_name=_('Дата публикации'),
+        auto_now_add=True,
+    )
+    change_date = models.DateTimeField(
+        verbose_name=_('Дата изменения'),
+        auto_now=True,
+    )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name=_('Время приготовления, мин'),
         validators=[
             validators.MinValueValidator(
                 1,
-                message='Время не может быть меньше 1 минуты',
+                message=_('Время не может быть меньше 1 минуты'),
             ),
             validators.MaxValueValidator(
                 1000,
-                message='Слишком долго, укажите время в минутах',
+                message=_('Слишком долго, укажите время в минутах'),
             ),
         ]
+    )
+    tags = models.ManyToManyField(
+        to=Tag,
+        verbose_name=_('Теги'),
+        related_name='recipes',
     )
 
     class Meta:
         app_label = 'api'
-        ordering = ('-id', )
+        ordering = ('-pub_date', )
         verbose_name = _('Рецепт')
         verbose_name_plural = _('Рецепты')
 
@@ -81,46 +146,95 @@ class Recipe(models.Model):
         return self.name
 
 
-class Quantity(models.Model):
-    recipe = models.ForeignKey(
-        to=Recipe,
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        to=User,
+        verbose_name=_('Подписчик'),
         on_delete=models.CASCADE,
+        related_name='subscriptions',
     )
-    ingredient = models.ForeignKey(
-        to=Ingredient,
+    author = models.ForeignKey(
+        to=User,
+        verbose_name=_('Автор'),
         on_delete=models.CASCADE,
-    )
-    quantity = models.PositiveSmallIntegerField(
-        validators=[
-            validators.MaxValueValidator(
-                10000,
-                message='Слишком много, проверьте единицы измерения',
-            ),
-        ]
-    )
-
-
-class Tag(models.Model):
-    name = models.CharField(
-        verbose_name=_('Наименование'),
-        max_length=200,
-        unique=True,
-    )
-    color = fields.ColorField(
-        verbose_name=_('Цвет'),
-        default='#FF0000'
-    )
-    slug = models.SlugField(
-        verbose_name=_('Слаг'),
-        max_length=200,
-        unique=True,
+        related_name='subscribers',
     )
 
     class Meta:
         app_label = 'api'
-        ordering = ('name', )
-        verbose_name = _('Тег')
-        verbose_name_plural = _('Теги')
+        ordering = ('id', )
+        verbose_name = _('Подписка')
+        verbose_name_plural = _('Подписки')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='user_and_author_uniq_together'),
+            ]
 
     def __str__(self):
-        return self.name
+        return f'Подписка: {self.user.username} на {self.author.username}'
+
+    def clean(self):
+        errors = {}
+        if self.user == self.author:
+            errors['author'] = ValidationError(
+                _('Пользователь не может быть подписан на самого себя.')
+            )
+        if errors:
+            raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        to=User,
+        verbose_name=_('Пользователь'),
+        on_delete=models.CASCADE,
+        related_name='favorites',
+    )
+    recipe = models.ForeignKey(
+        to=Recipe,
+        verbose_name=_('Рецепт'),
+        on_delete=models.CASCADE,
+        related_name='additions',
+    )
+
+    class Meta:
+        app_label = 'api'
+        ordering = ('id', )
+        verbose_name = _('Избранный рецепт')
+        verbose_name_plural = _('Избранные рецепты')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='user_and_recipe_uniq_together'),
+            ]
+
+
+class Purchase(models.Model):
+    user = models.ForeignKey(
+        to=User,
+        verbose_name=_('Пользователь'),
+        on_delete=models.CASCADE,
+        related_name='shopping_cart',
+    )
+    recipe = models.ForeignKey(
+        to=Recipe,
+        verbose_name=_('Рецепт'),
+        on_delete=models.CASCADE,
+        related_name='purchases',
+    )
+
+    class Meta:
+        app_label = 'api'
+        ordering = ('id', )
+        verbose_name = _('Покупка')
+        verbose_name_plural = _('Покупки')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='user_and_purchase_uniq_together'),
+            ]

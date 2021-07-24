@@ -5,13 +5,16 @@ name = "pypi"
 
 [packages]
 django = "*"
-django-filter = "*"
 djangorestframework = "*"
-pillow = "*"
+markdown = "*"
 gunicorn = "*"
+pillow = "*"
+djoser = "*"
 psycopg2-binary = "*"
-pytest = "*"
 python-dotenv = "*"
+drf-extra-fields = "*"
+django-filter = "*"
+reportlab = "*"
 
 [dev-packages]
 
