@@ -14,3 +14,18 @@
 - Docker
 - Nginx
 - Postgres
+
+### Запуск backend'а без Docker
+1. Создать свой .env файл и сохранить его в корневом каталоге.
+2. Установить pipenv.
+
+```pip install pipenv```  
+
+3. Запустить виртуальное окружение и установить зависимости.
+
+```pipenv shell```
+```pipenv install```
+
+4. Запустить django.
+
+```python manage.py runserver```
