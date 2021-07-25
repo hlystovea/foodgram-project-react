@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers, validators
@@ -73,6 +74,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = models.Recipe
 
+    @transaction.atomic
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
@@ -87,6 +89,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             recipe.tags.add(tag)
         return recipe
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')

@@ -33,7 +33,7 @@ class Quantity(models.Model):
     ingredient = models.ForeignKey(
         to=Ingredient,
         verbose_name=_('Ингредиент'),
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
     )
     recipe = models.ForeignKey(
         to='Recipe',
@@ -44,6 +44,7 @@ class Quantity(models.Model):
     amount = models.PositiveSmallIntegerField(
         verbose_name=_('Количество'),
         validators=[
+            # здесь использую валидацию только по "верху", т.к. поле Positive
             validators.MaxValueValidator(
                 99999,
                 message='Слишком много, проверьте единицы измерения',
@@ -79,10 +80,13 @@ class Tag(models.Model):
         max_length=200,
         unique=True,
     )
+    order = models.PositiveSmallIntegerField(
+        verbose_name=_('Порядок вывода'),
+    )
 
     class Meta:
         app_label = 'api'
-        ordering = ('name', )
+        ordering = ('order', 'name')
         verbose_name = _('Тег')
         verbose_name_plural = _('Теги')
 
