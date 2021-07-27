@@ -40,10 +40,7 @@ class RecipeViewSet(ModelViewSet):
         user = self.request.user
         if not user.is_authenticated:
             return self.queryset
-        favorites = Favorite.objects.filter(recipe=OuterRef('pk'), user=user)
-        purchases = Purchase.objects.filter(recipe=OuterRef('pk'), user=user)
-        return self.queryset.annotate(is_favorited=Exists(favorites)) \
-                            .annotate(is_in_shopping_cart=Exists(purchases))
+        return self.queryset.with_user(user)
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -56,15 +53,8 @@ class RecipeViewSet(ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def download_shopping_cart(self, request):
-        ingredients = Quantity.objects.filter(
-            recipe__purchases__user=request.user
-        )
-        purchases = ingredients.values(
-            name=F('ingredient__name'),
-            unit=F('ingredient__measurement_unit'),
-        ).annotate(
-            total=Sum('amount'),
-        )
+        user = self.request.user
+        purchases = Quantity.objects.purchases(user)
         file = get_pdf(purchases)
         return FileResponse(file, as_attachment=True, filename='purchases.pdf')
 

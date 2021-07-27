@@ -4,6 +4,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from . import fields
+from .manager import QuantityQuerySet, RecipeQuerySet
 
 User = get_user_model()
 
@@ -50,6 +51,7 @@ class Quantity(models.Model):
             ),
         ]
     )
+    objects = QuantityQuerySet.as_manager()
 
     class Meta:
         app_label = 'api'
@@ -138,6 +140,7 @@ class Recipe(models.Model):
         verbose_name=_('Теги'),
         related_name='recipes',
     )
+    objects = RecipeQuerySet.as_manager()
 
     class Meta:
         app_label = 'api'
