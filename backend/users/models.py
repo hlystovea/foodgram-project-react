@@ -13,19 +13,19 @@ class CustomUser(AbstractUser):
         max_length=150,
         unique=True,
         help_text=_(
-            'Required. 150 characters or fewer. \
-             Letters, digits and @/./+/-/_ only.'
+            'Обязательное. 150 знаков или менее. \
+             Только буквы, цифры и символы @/./+/-/_.'
         ),
         validators=[username_validator],
         error_messages={
-            'unique': _("A user with that username already exists."),
+            'unique': _('Пользователь с таким username уже существует.'),
         },
     )
     email = models.EmailField(
         _('email address'),
         unique=True,
         error_messages={
-            'unique': _("A user with that email already exists."),
+            'unique': _('Пользователь с таким email уже существует.'),
         },
     )
 
