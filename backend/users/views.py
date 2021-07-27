@@ -18,8 +18,6 @@ User = get_user_model()
 
 
 class CustomUserViewSet(UserViewSet):
-    pagination_class = CustomPagination
-
     def get_queryset(self):
         user = self.request.user
         if not user.is_authenticated:

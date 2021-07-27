@@ -35,7 +35,6 @@ class RecipeViewSet(ModelViewSet):
     serializer_class = serializers.RecipeSerializer
     permission_classes = [IsAdminOrAuthorOrReadOnly]
     filter_class = RecipeFilter
-    pagination_class = CustomPagination
 
     def get_queryset(self):
         user = self.request.user
