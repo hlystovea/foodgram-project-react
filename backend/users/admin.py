@@ -1,9 +1,18 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+from django.urls import reverse
+from django.utils.html import format_html
+from django.utils.http import urlencode
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
+from . import models
+
 User = get_user_model()
+
+
+class MixinAdmin(admin.ModelAdmin):
+    empty_value_display = _('-пусто-')
 
 
 @admin.register(User)
@@ -55,3 +64,30 @@ class CustomUserAdmin(UserAdmin):
             if f in form.base_fields:
                 form.base_fields[f].disabled = True
         return form
+
+
+@admin.register(models.Subscription)
+class SubscriptionAdmin(MixinAdmin):
+    list_display = ('id', 'get_user', 'get_author')
+    search_fields = ('user', 'author')
+    autocomplete_fields = ('user', 'author')
+
+    @admin.display(description=_('Пользователь'))
+    def get_user(self, obj):
+        user = obj.user
+        url = (
+            reverse('admin:users_customuser_changelist')
+            + '?'
+            + urlencode({'id': f'{user.id}'})
+        )
+        return format_html('<a href="{}">{}</a>', url, user)
+
+    @admin.display(description=_('Автор'))
+    def get_author(self, obj):
+        author = obj.author
+        url = (
+            reverse('admin:users_customuser_changelist')
+            + '?'
+            + urlencode({'id': f'{author.id}'})
+        )
+        return format_html('<a href="{}">{}</a>', url, author)
