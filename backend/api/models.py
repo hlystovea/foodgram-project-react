@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.core import validators
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -148,49 +147,6 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class Subscription(models.Model):
-    user = models.ForeignKey(
-        to=User,
-        verbose_name=_('Подписчик'),
-        on_delete=models.CASCADE,
-        related_name='subscriptions',
-    )
-    author = models.ForeignKey(
-        to=User,
-        verbose_name=_('Автор'),
-        on_delete=models.CASCADE,
-        related_name='subscribers',
-    )
-
-    class Meta:
-        app_label = 'api'
-        ordering = ('id', )
-        verbose_name = _('Подписка')
-        verbose_name_plural = _('Подписки')
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'author'],
-                name='user_and_author_uniq_together',
-            ),
-        ]
-
-    def __str__(self):
-        return f'Подписка: {self.user.username} на {self.author.username}'
-
-    def clean(self):
-        errors = {}
-        if self.user == self.author:
-            errors['author'] = ValidationError(
-                _('Пользователь не может быть подписан на самого себя.')
-            )
-        if errors:
-            raise ValidationError(errors)
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)
 
 
 class Favorite(models.Model):

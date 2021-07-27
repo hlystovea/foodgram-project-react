@@ -85,33 +85,6 @@ class TagAdmin(MixinAdmin):
     list_editable = ('name', 'slug', 'color')
 
 
-@admin.register(models.Subscription)
-class SubscriptionAdmin(MixinAdmin):
-    list_display = ('id', 'get_user', 'get_author')
-    search_fields = ('user', 'author')
-    autocomplete_fields = ('user', 'author')
-
-    @admin.display(description=_('Пользователь'))
-    def get_user(self, obj):
-        user = obj.user
-        url = (
-            reverse('admin:users_customuser_changelist')
-            + '?'
-            + urlencode({'id': f'{user.id}'})
-        )
-        return format_html('<a href="{}">{}</a>', url, user)
-
-    @admin.display(description=_('Автор'))
-    def get_author(self, obj):
-        author = obj.author
-        url = (
-            reverse('admin:users_customuser_changelist')
-            + '?'
-            + urlencode({'id': f'{author.id}'})
-        )
-        return format_html('<a href="{}">{}</a>', url, author)
-
-
 @admin.register(models.Favorite)
 class FavoriteAdmin(MixinAdmin):
     list_display = ('id', 'get_user', 'get_recipe')

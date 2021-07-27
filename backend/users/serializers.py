@@ -4,7 +4,7 @@ from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers, validators
 
 from api import serializers as srlz
-from api.models import Subscription
+from .models import Subscription
 from .utils import get_limit
 
 User = get_user_model()
