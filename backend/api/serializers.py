@@ -58,7 +58,7 @@ class RecipeSerializer(RecipeLiteSerializer):
     is_favorited = serializers.BooleanField(default=False)
     is_in_shopping_cart = serializers.BooleanField(default=False)
 
-    class Meta(RecipeLiteSerializer.Meta):
+    class Meta:
         fields = '__all__'
         model = models.Recipe
 
@@ -79,14 +79,16 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
         recipe = models.Recipe.objects.create(**validated_data)
+
+        # Здесь метод get_or_create очищает данные от дублей
         for ingredient in ingredients_data:
             ingredient, created = models.Quantity.objects.get_or_create(
                 recipe=recipe,
                 ingredient=ingredient['id'],
                 amount=ingredient['amount'],
             )
-        for tag in tags_data:
-            recipe.tags.add(tag)
+
+        recipe.tags.set(tags_data)
         return recipe
 
     @transaction.atomic
@@ -100,16 +102,18 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'cooking_time',
             instance.cooking_time,
         )
-        instance.tags.set(tags_data)
 
         models.Quantity.objects.filter(recipe=instance).delete()
 
+        # Здесь метод get_or_create очищает данные от дублей
         for ingredient in ingredients_data:
             ingredient, created = models.Quantity.objects.get_or_create(
                 recipe=instance,
                 ingredient=ingredient['id'],
                 amount=ingredient['amount'],
             )
+
+        instance.tags.set(tags_data)
         instance.save()
         return instance
 

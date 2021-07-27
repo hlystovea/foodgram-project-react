@@ -25,7 +25,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         write_only=True
     )
 
-    class Meta(UserCreateSerializer.Meta):
+    class Meta:
         model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'password')
 
@@ -34,10 +34,10 @@ class SubscriptionReadSerializer(CustomUserSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.IntegerField(read_only=True)
 
-    class Meta(CustomUserSerializer.Meta):
+    class Meta:
+        model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name',
                   'is_subscribed', 'recipes', 'recipes_count')
-        model = User
 
     def get_recipes(self, obj):
         serializer = srlz.RecipeLiteSerializer(obj.recipes, many=True)
