@@ -8,9 +8,9 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import mixins, viewsets
 
 from .models import Subscription
-from api.pagination import CustomPagination
 from .serializers import (SubscriptionReadSerializer,
                           SubscriptionWriteSerializer)
 
@@ -22,38 +22,7 @@ class CustomUserViewSet(UserViewSet):
         user = self.request.user
         if not user.is_authenticated:
             return self.queryset
-        subscription = Subscription.objects.filter(
-            author=OuterRef('pk'),
-            user=user
-        )
-        return self.queryset.annotate(is_subscribed=Exists(subscription))
-
-    @action(['get'], False, permission_classes=[IsAuthenticated])
-    def subscriptions(self, request):
-        user = self.request.user
-        subscribtion = Subscription.objects.filter(
-            author=OuterRef('pk'),
-            user=user,
-        )
-        queryset = User.objects.filter(subscribers__user=user) \
-                               .annotate(recipes_count=Count('recipes')) \
-                               .annotate(is_subscribed=Exists(subscribtion))
-        context = {'request': request}
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = SubscriptionReadSerializer(
-                page,
-                context=context,
-                many=True,
-            )
-            return self.get_paginated_response(serializer.data)
-
-        serializer = SubscriptionReadSerializer(
-            queryset,
-            context=context,
-            many=True,
-        )
-        return Response(serializer.data, status=HTTPStatus.OK)
+        return self.queryset.with_user(user)
 
     @action(['get', 'delete'], True, permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
@@ -77,3 +46,19 @@ class CustomUserViewSet(UserViewSet):
             message = {'errors': _('Подписка не найдена.')}
             return Response(message, status=HTTPStatus.BAD_REQUEST)
         return None
+
+
+class SubscriptionViewSet(mixins.ListModelMixin,
+                          viewsets.GenericViewSet):
+    permission_classes=[IsAuthenticated]
+    serializer_class = SubscriptionReadSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        subscribtion = Subscription.objects.filter(
+            author=OuterRef('pk'),
+            user=user,
+        )
+        return User.objects.filter(subscribers__user=user) \
+                           .annotate(recipes_count=Count('recipes')) \
+                           .annotate(is_subscribed=Exists(subscribtion))

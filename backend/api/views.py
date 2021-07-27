@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Exists, F, OuterRef, Sum
 from django.http import FileResponse
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -8,7 +7,6 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from . import serializers
 from .filters import IngredientFilter, RecipeFilter
 from .models import Favorite, Ingredient, Purchase, Quantity, Recipe, Tag
-from .pagination import CustomPagination
 from .permissions import IsAdminOrAuthorOrReadOnly
 from .utils import binder, get_pdf
 
