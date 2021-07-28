@@ -1,9 +1,10 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from . import views, routers
+from . import views
+from common import routers
 
-subscribe_router = routers.SubscribeRouter()
+subscribe_router = routers.CustomRouter()
 subscribe_router.register(r'users/(?P<author_id>\d+)/subscribe', views.SubscribeViewSet, basename='subscribe')
 
 users_router = DefaultRouter()

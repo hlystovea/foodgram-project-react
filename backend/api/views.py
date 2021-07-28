@@ -1,19 +1,20 @@
 from django.contrib.auth import get_user_model
 from django.http import FileResponse
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from . import serializers
 from .filters import IngredientFilter, RecipeFilter
+from .mixins import CustomMixin
 from .models import Favorite, Ingredient, Purchase, Quantity, Recipe, Tag
-from .permissions import IsAdminOrAuthorOrReadOnly
-from .utils import binder, get_pdf
+from common.permissions import IsAdminOrAuthorOrReadOnly
+from common.utils import get_pdf
 
 User = get_user_model()
 
 
-class IngredientViewSet(ReadOnlyModelViewSet):
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = serializers.IngredientSerializer
     permission_classes = [AllowAny]
@@ -21,14 +22,14 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     pagination_class = None
 
 
-class TagViewSet(ReadOnlyModelViewSet):
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = serializers.TagSerializer
     permission_classes = [AllowAny]
     pagination_class = None
 
 
-class RecipeViewSet(ModelViewSet):
+class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = serializers.RecipeSerializer
     permission_classes = [IsAdminOrAuthorOrReadOnly]
@@ -56,18 +57,12 @@ class RecipeViewSet(ModelViewSet):
         file = get_pdf(purchases)
         return FileResponse(file, as_attachment=True, filename='purchases.pdf')
 
-    @action(
-        methods=['get', 'delete'],
-        detail=True,
-        permission_classes=[IsAuthenticated],
-    )
-    def favorite(self, request, pk=None):
-        return binder(request, pk, Favorite, serializers.FavoriteSerializer)
 
-    @action(
-        methods=['get', 'delete'],
-        detail=True,
-        permission_classes=[IsAuthenticated],
-    )
-    def shopping_cart(self, request, pk=None):
-        return binder(request, pk, Purchase, serializers.PurchaseSerializer)
+class FavoriteViewSet(CustomMixin):
+    queryset = Favorite.objects.all()
+    serializer_class = serializers.FavoriteSerializer
+
+
+class PurchaseViewSet(CustomMixin):
+    queryset = Purchase.objects.all()
+    serializer_class = serializers.PurchaseSerializer
