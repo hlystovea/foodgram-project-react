@@ -16,7 +16,7 @@ class CustomMixin(mixins.CreateModelMixin,
 
     def get_object(self):
         recipe = get_object_or_404(Recipe, pk=self.kwargs['recipe_id'])
-        return self.queryset.filter(recipe=recipe)
+        return self.queryset.filter(recipe=recipe, user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         recipe = get_object_or_404(Recipe, pk=self.kwargs['recipe_id'])
