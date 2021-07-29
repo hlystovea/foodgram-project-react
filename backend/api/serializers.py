@@ -4,8 +4,8 @@ from django.utils.translation import gettext_lazy as _
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers, validators
 
+from .models import Favorite, Ingredient, Purchase, Quantity, Recipe, Tag
 from users.serializers import CustomUserSerializer
-from .models import *
 
 User = get_user_model()
 
