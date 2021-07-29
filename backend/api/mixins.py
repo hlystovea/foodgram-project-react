@@ -9,9 +9,9 @@ from .models import Recipe
 from .serializers import RecipeLiteSerializer
 
 
-class CustomMixin(mixins.CreateModelMixin,
-                  mixins.DestroyModelMixin,
-                  viewsets.GenericViewSet):
+class CreateDestroyMixin(mixins.CreateModelMixin,
+                         mixins.DestroyModelMixin,
+                         viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
