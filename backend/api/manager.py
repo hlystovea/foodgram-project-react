@@ -1,15 +1,15 @@
 from django.db.models import Exists, F, QuerySet, OuterRef, Sum
 
-from . import models
+from .models import *
 
 
 class RecipeQuerySet(QuerySet):
     def with_user(self, user):
-        favorites = models.Favorite.objects.filter(
+        favorites = Favorite.objects.filter(
             recipe=OuterRef('pk'),
             user=user,
         )
-        purchases = models.Purchase.objects.filter(
+        purchases = Purchase.objects.filter(
             recipe=OuterRef('pk'),
             user=user,
         )

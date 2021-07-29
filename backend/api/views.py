@@ -6,7 +6,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from . import serializers
 from .filters import IngredientFilter, RecipeFilter
-from .mixins import CustomMixin
+from .mixins import CreateDestroyMixin
 from .models import Favorite, Ingredient, Purchase, Quantity, Recipe, Tag
 from common.permissions import IsAdminOrAuthorOrReadOnly
 from common.utils import get_pdf
@@ -58,11 +58,11 @@ class RecipeViewSet(ModelViewSet):
         return FileResponse(file, as_attachment=True, filename='purchases.pdf')
 
 
-class FavoriteViewSet(CustomMixin):
+class FavoriteViewSet(CreateDestroyMixin):
     queryset = Favorite.objects.all()
     serializer_class = serializers.FavoriteSerializer
 
 
-class PurchaseViewSet(CustomMixin):
+class PurchaseViewSet(CreateDestroyMixin):
     queryset = Purchase.objects.all()
     serializer_class = serializers.PurchaseSerializer

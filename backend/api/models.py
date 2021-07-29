@@ -2,9 +2,20 @@ from django.contrib.auth import get_user_model
 from django.core import validators
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django_resized import ResizedImageField
 
 from . import fields
 from .manager import QuantityQuerySet, RecipeQuerySet
+
+__all__ = [
+    'Ingredient',
+    'Quantity',
+    'Tag',
+    'Recipe',
+    'Favorite',
+    'Purchase',
+]
+
 
 User = get_user_model()
 
@@ -44,10 +55,13 @@ class Quantity(models.Model):
     amount = models.PositiveSmallIntegerField(
         verbose_name=_('Количество'),
         validators=[
-            # здесь использую валидацию только по "верху", т.к. поле Positive
             validators.MaxValueValidator(
-                99999,
+                32767,
                 message='Слишком много, проверьте единицы измерения',
+            ),
+            validators.MinValueValidator(
+                1,
+                message='Слишком мало, проверьте единицы измерения',
             ),
         ]
     )
@@ -102,9 +116,11 @@ class Recipe(models.Model):
         on_delete=models.CASCADE,
         related_name='recipes',
     )
-    image = models.ImageField(
+    image = ResizedImageField(
         verbose_name=_('Изображение'),
         upload_to='recipes/',
+        size=[800, 800],
+        crop=['middle', 'center'],
     )
     name = models.CharField(
         verbose_name=_('Название'),
@@ -147,6 +163,14 @@ class Recipe(models.Model):
         ordering = ('-pub_date', )
         verbose_name = _('Рецепт')
         verbose_name_plural = _('Рецепты')
+
+    def add_ingredients(self, ingredients):
+        for ingredient in ingredients:
+            Quantity.objects.get_or_create(
+                recipe=self,
+                ingredient=ingredient['id'],
+                defaults={'amount': ingredient['amount']},
+            )
 
     def __str__(self):
         return self.name
