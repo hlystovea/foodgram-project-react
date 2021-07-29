@@ -18,9 +18,11 @@ services:
     env_file:
       - ./.env
   frontend:
-    image: hlystovea/foodgram_front:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     volumes:
-      - react_build:/build
+      - ./frontend/:/app/result_build/
     depends_on:
       - backend
   nginx:
@@ -29,16 +31,15 @@ services:
       - '80:80'
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - react_build:/usr/share/nginx/html
+      - ./frontend/build:/usr/share/nginx/html/
       - static_value:/var/html/static/
       - media_value:/var/html/media/
-      - ../docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
-      - ../docs/openapi-schema.yml:/usr/share/nginx/html/api/docs/openapi-schema.yml
+      - ./docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
+      - ./docs/openapi-schema.yml:/usr/share/nginx/html/api/docs/openapi-schema.yml
     depends_on:
       - frontend
 
 volumes:
   postgres_data:
-  react_build:
   static_value:
   media_value:
