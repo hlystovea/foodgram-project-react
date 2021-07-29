@@ -164,6 +164,14 @@ class Recipe(models.Model):
         verbose_name = _('Рецепт')
         verbose_name_plural = _('Рецепты')
 
+    def add_ingredients(self, ingredients):
+        for ingredient in ingredients:
+            Quantity.objects.get_or_create(
+                recipe=self,
+                ingredient=ingredient['id'],
+                defaults={'amount': ingredient['amount']},
+            )
+
     def __str__(self):
         return self.name
 

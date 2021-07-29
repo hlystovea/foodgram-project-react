@@ -5,7 +5,7 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers, validators
 
 from users.serializers import CustomUserSerializer
-from . import models
+from .models import *
 
 User = get_user_model()
 
@@ -13,7 +13,7 @@ User = get_user_model()
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
-        model = models.Ingredient
+        model = Ingredient
 
 
 class QuantitySerializer(serializers.ModelSerializer):
@@ -26,29 +26,29 @@ class QuantitySerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ['id', 'name', 'measurement_unit', 'amount']
-        model = models.Quantity
+        model = Quantity
 
 
 class QuantityWriteSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
-        queryset=models.Ingredient.objects.all()
+        queryset=Ingredient.objects.all()
     )
 
     class Meta:
         fields = ['id', 'amount']
-        model = models.Quantity
+        model = Quantity
 
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
-        model = models.Tag
+        model = Tag
 
 
 class RecipeLiteSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'name', 'image', 'cooking_time')
-        model = models.Recipe
+        model = Recipe
 
 
 class RecipeSerializer(RecipeLiteSerializer):
@@ -60,7 +60,7 @@ class RecipeSerializer(RecipeLiteSerializer):
 
     class Meta:
         fields = '__all__'
-        model = models.Recipe
+        model = Recipe
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -72,22 +72,14 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = '__all__'
-        model = models.Recipe
+        model = Recipe
 
     @transaction.atomic
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
-        recipe = models.Recipe.objects.create(**validated_data)
-
-        # Здесь метод get_or_create очищает данные от дублей
-        for ingredient in ingredients_data:
-            ingredient, created = models.Quantity.objects.get_or_create(
-                recipe=recipe,
-                ingredient=ingredient['id'],
-                amount=ingredient['amount'],
-            )
-
+        recipe = Recipe.objects.create(**validated_data)
+        recipe.add_ingredients(ingredients_data)
         recipe.tags.set(tags_data)
         return recipe
 
@@ -102,36 +94,23 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'cooking_time',
             instance.cooking_time,
         )
-
-        models.Quantity.objects.filter(recipe=instance).delete()
-
-        # Здесь метод get_or_create очищает данные от дублей
-        for ingredient in ingredients_data:
-            ingredient, created = models.Quantity.objects.get_or_create(
-                recipe=instance,
-                ingredient=ingredient['id'],
-                amount=ingredient['amount'],
-            )
-
+        Quantity.objects.filter(recipe=instance).delete()
+        instance.add_ingredients(ingredients_data)
         instance.tags.set(tags_data)
         instance.save()
         return instance
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    recipe = serializers.PrimaryKeyRelatedField(
-        queryset=models.Recipe.objects.all()
-    )
-    user = serializers.HiddenField(
-        default=serializers.CurrentUserDefault()
-    )
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
-        model = models.Favorite
+        model = Favorite
         fields = '__all__'
         validators = [
             validators.UniqueTogetherValidator(
-                queryset=models.Favorite.objects.all(),
+                queryset=Favorite.objects.all(),
                 fields=['recipe', 'user'],
                 message=_('Этот рецепт уже есть в вашем списке избранного.')
             ),
@@ -140,11 +119,11 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 class PurchaseSerializer(FavoriteSerializer):
     class Meta:
-        model = models.Purchase
+        model = Purchase
         fields = '__all__'
         validators = [
             validators.UniqueTogetherValidator(
-                queryset=models.Purchase.objects.all(),
+                queryset=Purchase.objects.all(),
                 fields=['recipe', 'user'],
                 message=_('Этот рецепт уже есть в вашем списке покупок.')
             ),
