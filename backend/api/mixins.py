@@ -8,10 +8,11 @@ from rest_framework.response import Response
 from .models import Recipe
 from .serializers import RecipeLiteSerializer
 
+
 class CustomMixin(mixins.CreateModelMixin,
                   mixins.DestroyModelMixin,
                   viewsets.GenericViewSet):
-    permission_classes=[IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
         recipe = get_object_or_404(Recipe, pk=self.kwargs['recipe_id'])
@@ -25,4 +26,8 @@ class CustomMixin(mixins.CreateModelMixin,
         serializer.save()
         serializer = RecipeLiteSerializer(recipe)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=HTTPStatus.CREATED, headers=headers)
+        return Response(
+            serializer.data,
+            status=HTTPStatus.CREATED,
+            headers=headers,
+        )

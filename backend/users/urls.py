@@ -5,10 +5,18 @@ from . import views
 from common import routers
 
 subscribe_router = routers.CustomRouter()
-subscribe_router.register(r'users/(?P<author_id>\d+)/subscribe', views.SubscribeViewSet, basename='subscribe')
+subscribe_router.register(
+    r'users/(?P<author_id>\d+)/subscribe',
+    views.SubscribeViewSet,
+    basename='subscribe',
+)
 
 users_router = DefaultRouter()
-users_router.register(r'users/subscriptions', views.SubscriptionViewSet, basename='subscriptions')
+users_router.register(
+    r'users/subscriptions',
+    views.SubscriptionViewSet,
+    basename='subscriptions',
+)
 users_router.register(r'users', views.CustomUserViewSet, basename='users')
 
 urlpatterns = [

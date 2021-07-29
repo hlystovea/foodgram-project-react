@@ -3,8 +3,8 @@ from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers, validators
-from users.serializers import CustomUserSerializer
 
+from users.serializers import CustomUserSerializer
 from . import models
 
 User = get_user_model()

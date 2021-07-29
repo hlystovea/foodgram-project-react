@@ -3,9 +3,9 @@ from django.utils.translation import gettext_lazy as _
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers, validators
 
-from api import serializers as srlz
 from .models import Subscription
 from .utils import get_limit
+from api import serializers as srlz
 
 User = get_user_model()
 
