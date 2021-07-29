@@ -21,7 +21,7 @@ v1_router = DefaultRouter()
 v1_router.register(r'tags', views.TagViewSet, basename='tags')
 v1_router.register(r'recipes', views.RecipeViewSet, basename='recipes')
 v1_router.register(
-    r'ingredients', 
+    r'ingredients',
     views.IngredientViewSet,
     basename='ingredients',
 )
