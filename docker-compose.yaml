@@ -21,7 +21,7 @@ services:
     image: hlystovea/foodgram_front:latest
     volumes:
       - react_build:/build
-  depends_on:
+    depends_on:
       - backend
   nginx:
     image: nginx:latest
