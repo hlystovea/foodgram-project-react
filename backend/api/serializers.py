@@ -138,14 +138,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
         ]
 
 
-class PurchaseSerializer(serializers.ModelSerializer):
-    recipe = serializers.PrimaryKeyRelatedField(
-        queryset=models.Recipe.objects.all()
-    )
-    user = serializers.HiddenField(
-        default=serializers.CurrentUserDefault()
-    )
-
+class PurchaseSerializer(FavoriteSerializer):
     class Meta:
         model = models.Purchase
         fields = '__all__'
