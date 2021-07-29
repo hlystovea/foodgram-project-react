@@ -15,6 +15,7 @@ python-dotenv = "*"
 drf-extra-fields = "*"
 django-filter = "*"
 reportlab = "*"
+django-resized = "*"
 
 [dev-packages]
 
