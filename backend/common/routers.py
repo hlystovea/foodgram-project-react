@@ -1,5 +1,6 @@
 from rest_framework.routers import Route, SimpleRouter
 
+
 class CustomRouter(SimpleRouter):
     routes = [
         Route(

@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .manager import CustomUserQuerySet
 
+
 class CustomUser(AbstractUser):
     username_validator = UnicodeUsernameValidator()
 

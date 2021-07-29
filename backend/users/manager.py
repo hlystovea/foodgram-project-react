@@ -2,6 +2,7 @@ from django.db.models import Count, Exists, QuerySet, OuterRef
 
 from . import models
 
+
 class CustomUserQuerySet(QuerySet):
     def with_user(self, user):
         subscription = models.Subscription.objects.filter(
