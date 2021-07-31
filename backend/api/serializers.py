@@ -33,6 +33,7 @@ class QuantityWriteSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all()
     )
+    amount = serializers.IntegerField()
 
     class Meta:
         fields = ['id', 'amount']
@@ -73,6 +74,14 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Recipe
+
+    def validate_ingredients(self, value):
+        for ingredient in value:
+            if ingredient['amount'] < 1:
+                raise serializers.ValidationError(
+                    _('Количество должно быть больше 0.')
+                )
+        return value
 
     @transaction.atomic
     def create(self, validated_data):
