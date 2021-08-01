@@ -4,7 +4,7 @@ from django.db.models import Exists, F, QuerySet, OuterRef, Sum
 class RecipeQuerySet(QuerySet):
     def with_user(self, user):
         from api.models import Favorite, Purchase
-        
+
         favorites = Favorite.objects.filter(
             recipe=OuterRef('pk'),
             user=user,
