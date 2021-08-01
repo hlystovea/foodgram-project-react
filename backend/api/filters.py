@@ -17,11 +17,11 @@ class RecipeFilter(FilterSet):
     is_favorited = BooleanFilter(field_name='is_favorited')
     is_in_shopping_cart = BooleanFilter(field_name='is_in_shopping_cart')
 
+    class Meta:
+        model = Recipe
+        fields = ['author', 'is_favorited', 'is_in_shopping_cart', 'tags']
+
     def filter_tags(self, queryset, name, value):
         values = self.data.getlist('tags')
         lookup = f'{name}__in'
         return queryset.filter(**{lookup: values}).distinct()
-
-    class Meta:
-        model = Recipe
-        fields = ['author', 'is_favorited', 'is_in_shopping_cart', 'tags']
