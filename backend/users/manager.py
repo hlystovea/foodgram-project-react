@@ -1,9 +1,10 @@
-from django.db.models import Count, Exists, QuerySet, OuterRef
+from django.contrib.auth.models import UserManager
+from django.db.models import Count, Exists, OuterRef
 
 from . import models
 
 
-class CustomUserQuerySet(QuerySet):
+class CustomUserManager(UserManager):
     def with_user(self, user):
         subscription = models.Subscription.objects.filter(
             author=OuterRef('pk'),
